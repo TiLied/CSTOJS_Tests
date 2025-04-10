@@ -87,6 +87,7 @@ namespace CSTOJS_Tests
 
 		public UnitTest() 
 		{
+			//https://stackoverflow.com/a/45117890
 			CultureInfo info = CultureInfo.InvariantCulture;
 			Thread.CurrentThread.CurrentCulture = info;
 			Thread.CurrentThread.CurrentUICulture = Thread.CurrentThread.CurrentCulture;
