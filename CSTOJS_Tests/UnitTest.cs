@@ -3,13 +3,15 @@ using CSharpToJavaScript;
 using CSharpToJavaScript.APIs.JS.Ecma;
 using Jint;
 using System;
+using System.Globalization;
 using System.Text;
+using System.Threading;
 
 namespace CSTOJS_Tests
 {
 	public class UnitTest
 	{
-		private readonly Engine _Engine = new();
+		private readonly Engine _Engine = new(cfg => cfg.Culture(CultureInfo.InvariantCulture));
 		private string _ConsoleStr = string.Empty;
 		private CSTOJS _CSTOJS = new();
 		private readonly CSTOJSOptions _DefaultUnitOpt = new()
@@ -41,16 +43,16 @@ namespace CSTOJS_Tests
 		
 		public static TheoryData<string[]> TestVariosNumbersData = new()
 		{
-			new string[] { "decimal", "3_000.5m", "3000,5" },
-			new string[] { "decimal", "400.75M", "400,75" },
+			new string[] { "decimal", "3_000.5m", "3000.5" },
+			new string[] { "decimal", "400.75M", "400.75" },
 
 			new string[] { "double", "3D", "3" },
 			new string[] { "double", "4d", "4" },
-			new string[] { "double", "3.934_001", "3,934001" },
-			new string[] { "double", "3.141592653589793", "3,141592653589793"},
+			new string[] { "double", "3.934_001", "3.934001" },
+			new string[] { "double", "3.141592653589793", "3.141592653589793"},
 
-			new string[] { "float", "3_000.5F", "3000,5" },
-			new string[] { "float", "5.4f", "5,4" }
+			new string[] { "float", "3_000.5F", "3000.5" },
+			new string[] { "float", "5.4f", "5.4" }
 		};
 		public static TheoryData<string[]> TestNumbersData = new()
 		{
@@ -85,6 +87,10 @@ namespace CSTOJS_Tests
 
 		public UnitTest() 
 		{
+			CultureInfo info = CultureInfo.InvariantCulture;
+			Thread.CurrentThread.CurrentCulture = info;
+			Thread.CurrentThread.CurrentUICulture = Thread.CurrentThread.CurrentCulture;
+
 			_Engine.SetValue("log", new Action<object>(ConsoleOutPut));
 
 			_CSTOJS = new CSTOJS();
@@ -490,7 +496,7 @@ namespace CSTOJS_Test.CSharp
 		[InlineData("(a += 3)", "8")]
 		[InlineData("(a -= 3)", "2")]
 		[InlineData("(a *= 3)", "15")]
-		[InlineData("(a /= 3)", "1,6666666666666667")]
+		[InlineData("(a /= 3)", "1.6666666666666667")]
 		[InlineData("(a %= 3)", "2")]
 		//c# does not have '**' ?
 		[InlineData("(a <<= 3)", "40")]
