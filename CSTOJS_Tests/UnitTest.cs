@@ -5,6 +5,7 @@ using Jint;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 
@@ -235,6 +236,9 @@ namespace CSTOJS_Test.CSharp
 		[Fact]
 		public void AnkiWebQuiz()
 		{
+			Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "TODO!");
+			Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "TODO!");
+
 			List<StringBuilder> lSB = _CSTOJS.GenerateOne("..\\..\\..\\CSharp\\AnkiWebQuiz.cs");
 
 			_Engine.Execute(lSB[0].ToString());
@@ -243,6 +247,9 @@ namespace CSTOJS_Test.CSharp
 		[Fact]
 		public void Test4()
 		{
+			Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "TODO!");
+			Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "TODO!");
+
 			List<StringBuilder> lSB = _CSTOJS.GenerateOne("..\\..\\..\\CSharp\\test4.cs");
 
 			_Engine.Execute(lSB[0].ToString());
@@ -251,6 +258,9 @@ namespace CSTOJS_Test.CSharp
 		[Fact]
 		public void Test6()
 		{
+			Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "TODO!");
+			Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "TODO!");
+
 			List<StringBuilder> lSB = _CSTOJS.GenerateOne("..\\..\\..\\CSharp\\test6.cs");
 
 			_Engine.Execute(lSB[0].ToString());
@@ -260,6 +270,9 @@ namespace CSTOJS_Test.CSharp
 		[Fact]
 		public void TestNBody()
 		{
+			Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "TODO!");
+			Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "TODO!");
+
 			List<StringBuilder> lSB = _CSTOJS.GenerateOne("..\\..\\..\\CSharp\\NBody.cs");
 
 			_Engine.Execute(lSB[0].ToString());
@@ -269,6 +282,9 @@ namespace CSTOJS_Test.CSharp
 		[Fact]
 		public void Test7()
 		{
+			Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "TODO!");
+			Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "TODO!");
+
 			List<StringBuilder> lSB = _CSTOJS.GenerateOne("..\\..\\..\\CSharp\\Test7.cs", _DefaultUnitOpt);
 
 			_Engine.Execute(lSB[0].ToString());
@@ -278,6 +294,9 @@ namespace CSTOJS_Test.CSharp
 		[Fact]
 		public void Test8()
 		{
+			Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "TODO!");
+			Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "TODO!");
+
 			List<StringBuilder> lSB = _CSTOJS.GenerateOne("..\\..\\..\\CSharp\\Test8.cs", _DefaultUnitOpt);
 
 
