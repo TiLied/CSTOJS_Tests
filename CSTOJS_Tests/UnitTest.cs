@@ -3,6 +3,7 @@ using CSharpToJavaScript;
 using CSharpToJavaScript.APIs.JS.Ecma;
 using Jint;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Threading;
@@ -41,7 +42,7 @@ namespace CSTOJS_Tests
 			new string[] { "CustomClass", "new CustomClass()", "System.Dynamic.ExpandoObject" },
 		};
 		
-		public static TheoryData<string[]> TestVariosNumbersData = new()
+		public static TheoryData<string[]> TestVariousNumbersData = new()
 		{
 			new string[] { "decimal", "3_000.5m", "3000.5" },
 			new string[] { "decimal", "400.75M", "400.75" },
@@ -224,7 +225,13 @@ namespace CSTOJS_Test.CSharp
 			_Engine.Execute(sb.ToString());
 			Assert.Equal("GlobalThisDate", _ConsoleStr);
 		}
-		/* Todo?
+
+
+
+
+		//
+		//
+		//Old tests! Should probably be deleted?
 		[Fact]
 		public void AnkiWebQuiz()
 		{
@@ -276,12 +283,15 @@ namespace CSTOJS_Test.CSharp
 
 			_Engine.Execute(lSB[0].ToString());
 			Assert.Equal("Done!", _ConsoleStr);
-		}*/
+		}
+		//
+		//
+		//
 
 		[Theory]
 		[MemberData(nameof(TestData))]
 		[MemberData(nameof(TestNumbersData))]
-		[MemberData(nameof(TestVariosNumbersData))]
+		[MemberData(nameof(TestVariousNumbersData))]
 		public void TestFieldsDefaultValue(string[] data) 
 		{
 			StringBuilder sb = _CSTOJS.GenerateOneFromString($@"
@@ -322,7 +332,7 @@ namespace CSTOJS_Test.CSharp
 		[Theory]
 		[MemberData(nameof(TestData))]
 		[MemberData(nameof(TestNumbersData))]
-		[MemberData(nameof(TestVariosNumbersData))]
+		[MemberData(nameof(TestVariousNumbersData))]
 		public void TestPropertiesDefaultValue(string[] data)
 		{
 			StringBuilder sb = _CSTOJS.GenerateOneFromString($@"
@@ -363,7 +373,7 @@ namespace CSTOJS_Test.CSharp
 		[Theory]
 		[MemberData(nameof(TestData))]
 		[MemberData(nameof(TestNumbersData))]
-		[MemberData(nameof(TestVariosNumbersData))]
+		[MemberData(nameof(TestVariousNumbersData))]
 		public void TestLocalValue(string[] data)
 		{
 			StringBuilder sb = _CSTOJS.GenerateOneFromString($@"
@@ -403,7 +413,7 @@ namespace CSTOJS_Test.CSharp
 		[Theory]
 		[MemberData(nameof(TestData))]
 		[MemberData(nameof(TestNumbersData))]
-		[MemberData(nameof(TestVariosNumbersData))]
+		[MemberData(nameof(TestVariousNumbersData))]
 		public void TestPassValueToMethod(string[] data)
 		{
 			StringBuilder sb = _CSTOJS.GenerateOneFromString($@"
@@ -446,7 +456,7 @@ namespace CSTOJS_Test.CSharp
 		[Theory]
 		[MemberData(nameof(TestData))]
 		[MemberData(nameof(TestNumbersData))]
-		[MemberData(nameof(TestVariosNumbersData))]
+		[MemberData(nameof(TestVariousNumbersData))]
 		public void TestDefaultParameterInMethod(string[] data)
 		{
 			StringBuilder sb = _CSTOJS.GenerateOneFromString($@"
