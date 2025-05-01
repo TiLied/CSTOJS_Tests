@@ -36,11 +36,15 @@ namespace CSTOJS_Tests
 			new string[] { "object", "new object()", "System.Dynamic.ExpandoObject" },
 
 			new string[] { "string", "\"str\"", "str" },
+			new string[] { "string?", "null", "null" },
 
 			new string[] { "dynamic", "0", string.Empty },
 
 			new string[] { "CustomClass", "new()", "System.Dynamic.ExpandoObject" },
 			new string[] { "CustomClass", "new CustomClass()", "System.Dynamic.ExpandoObject" },
+			new string[] { "CustomClass?", "null", "null" },
+
+			new string[] { "Boolean", "new Boolean(true)", "True" }
 		};
 		
 		public static TheoryData<string[]> TestVariousNumbersData = new()
@@ -113,6 +117,9 @@ using System.Threading.Tasks;
 using Jint;
 
 using System.Text;
+
+using Boolean = CSharpToJavaScript.APIs.JS.Ecma.Boolean;
+
 namespace CSTOJS_Test.CSharp
 {
 	public class UnitTest
@@ -152,6 +159,9 @@ using System.Threading.Tasks;
 using Jint;
 
 using System.Text;
+
+using Boolean = CSharpToJavaScript.APIs.JS.Ecma.Boolean;
+
 namespace CSTOJS_Test.CSharp
 {
 	public class UnitTest
@@ -181,6 +191,7 @@ using System.Threading.Tasks;
 using Jint;
 
 using System.Text;
+using Boolean = CSharpToJavaScript.APIs.JS.Ecma.Boolean;
 namespace CSTOJS_Test.CSharp
 {
 	public class UnitTest
@@ -211,6 +222,7 @@ using System.Threading.Tasks;
 using Jint;
 
 using System.Text;
+using Boolean = CSharpToJavaScript.APIs.JS.Ecma.Boolean;
 namespace CSTOJS_Test.CSharp
 {
 	public class UnitTest
@@ -324,6 +336,7 @@ using System.Threading.Tasks;
 using Jint;
 
 using System.Text;
+using Boolean = CSharpToJavaScript.APIs.JS.Ecma.Boolean;
 namespace CSTOJS_Test.CSharp
 {{
 	public class UnitTest
@@ -365,6 +378,7 @@ using System.Threading.Tasks;
 using Jint;
 
 using System.Text;
+using Boolean = CSharpToJavaScript.APIs.JS.Ecma.Boolean;
 namespace CSTOJS_Test.CSharp
 {{
 	public class UnitTest
@@ -406,6 +420,7 @@ using System.Threading.Tasks;
 using Jint;
 
 using System.Text;
+using Boolean = CSharpToJavaScript.APIs.JS.Ecma.Boolean;
 namespace CSTOJS_Test.CSharp
 {{
 	public class UnitTest
@@ -446,6 +461,7 @@ using System.Threading.Tasks;
 using Jint;
 
 using System.Text;
+using Boolean = CSharpToJavaScript.APIs.JS.Ecma.Boolean;
 namespace CSTOJS_Test.CSharp
 {{
 	public class UnitTest
@@ -489,6 +505,7 @@ using System.Threading.Tasks;
 using Jint;
 
 using System.Text;
+using Boolean = CSharpToJavaScript.APIs.JS.Ecma.Boolean;
 namespace CSTOJS_Test.CSharp
 {{
 	public class UnitTest
@@ -597,6 +614,7 @@ using System.Threading.Tasks;
 using Jint;
 
 using System.Text;
+using Boolean = CSharpToJavaScript.APIs.JS.Ecma.Boolean;
 namespace CSTOJS_Test.CSharp
 {{
 	public class UnitTest
@@ -618,9 +636,9 @@ namespace CSTOJS_Test.CSharp
 		}
 
 
-		private void ConsoleOutPut(object obj)
+		private void ConsoleOutPut(object? obj)
 		{
-			_ConsoleStr = obj.ToString() ?? "null";
+			_ConsoleStr = obj?.ToString() ?? "null";
 		}
 
 	}

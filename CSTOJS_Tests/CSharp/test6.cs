@@ -22,7 +22,7 @@ namespace UnitTest6
 	{
 		public required string FirstName { get; set; }
 		public required string LastName { get; set; }
-		[Value("asd")]
+		//[Value("asd")]
 		public void Write() 
 		{
 			if (FirstName != null)
