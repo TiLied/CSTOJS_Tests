@@ -30,11 +30,19 @@ public class UnitTest_ObjectPrototype
 			new string[] {"new Array().ToString()", "" },
 			new string[] {"GlobalThis.Array().ToString()", ""},
 
-			new string[] {"GlobalThis.BigInt(0).ToString()", "0"},
+			new string[] { "new ArrayBuffer(0).ToString()", "[object ArrayBuffer]" },
+			//Only with new:
+			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer/ArrayBuffer#syntax
+
+			new string[] { "GlobalThis.BigInt(0).ToString()", "0"},
 
 			new string[] {"new Boolean(true).ToString()", "true"},
 			//Boolean without new returns bool/value
 			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean/Boolean#return_value
+
+			new string[] { "new DataView(new ArrayBuffer(0)).ToString()", "[object DataView]" },
+			//Only with new:
+			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DataView/DataView#syntax
 
 			new string[] {"new Date(\"0\").ToString()", "Invalid Date"},
 			//Date without new returns string
@@ -45,6 +53,10 @@ public class UnitTest_ObjectPrototype
 
 			new string[] {"new Function(\"\",\"\").ToString()", "function anonymous() { [native code] }" },
 			new string[] {"GlobalThis.Function(\"\",\"\").ToString()", "function anonymous() { [native code] }" },
+
+			new string[] {"new Map().ToString()", "[object Map]" },
+			//Only with new:
+			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map/Map#syntax
 
 			//Math?
 
@@ -59,6 +71,14 @@ public class UnitTest_ObjectPrototype
 			//RegExp without new returns pattern
 			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/RegExp#return_value
 
+			new string[] {"new Set().ToString()", "[object Set]" },
+			//Only with new:
+			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set/Set#syntax
+
+			new string[]{ "new SharedArrayBuffer(0).ToString()", "[object SharedArrayBuffer]" },
+			//Only with new:
+			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer/SharedArrayBuffer#syntax
+
 			new string[] {"new String().ToString()", ""},
 			//String without new returns string/value
 			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/String#return_value
@@ -69,6 +89,15 @@ public class UnitTest_ObjectPrototype
 			//Can be called only with new:
 			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Int8Array/Int8Array#syntax
 			new string[] { "new Int8Array().ToString()", "" },
+
+			new string[] { "new WeakMap().ToString()", "[object WeakMap]" },
+			//Only with new:
+			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap/WeakMap#syntax
+			
+			new string[] { "new WeakSet().ToString()", "[object WeakSet]" }
+			//Only with new:
+			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakSet/WeakSet#syntax
+			
 	};
 	public UnitTest_ObjectPrototype()
 	{
@@ -81,9 +110,13 @@ public class UnitTest_ObjectPrototype
 		new Array().ToString();
 		GlobalThis.Array().ToString();
 
+		new ArrayBuffer(0).ToString();
+
 		GlobalThis.BigInt(0).ToString();
 
 		new Boolean(true).ToString();
+
+		new DataView(new ArrayBuffer(0)).ToString();
 
 		new Date("0").ToString();
 
@@ -93,6 +126,8 @@ public class UnitTest_ObjectPrototype
 		new Function("","").ToString();
 		GlobalThis.Function("","").ToString();
 
+		new Map().ToString();
+
 		new Number(0).ToString();
 
 		new Object().ToString();
@@ -100,11 +135,19 @@ public class UnitTest_ObjectPrototype
 
 		new RegExp("").ToString();
 
+		new Set().ToString();
+
+		new SharedArrayBuffer(0).ToString();
+
 		new String().ToString();
 
 		GlobalThis.Symbol().ToString();
 
 		new Int8Array().ToString();
+
+		new WeakMap().ToString();
+
+		new WeakSet().ToString();
 	}
 
 
