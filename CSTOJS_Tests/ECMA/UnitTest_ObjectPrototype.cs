@@ -27,8 +27,9 @@ public class UnitTest_ObjectPrototype
 	//1=js expected result
 	public static TheoryData<string[]> TestToStringData = new()
 		{
-			new string[] {"new Array().ToString()", "" },
-			new string[] {"GlobalThis.Array().ToString()", ""},
+
+			new string[] {" new Array().ToString()", "" },
+			new string[] {" GlobalThis.Array().ToString()", ""},
 
 			new string[] { "new ArrayBuffer(0).ToString()", "[object ArrayBuffer]" },
 			//Only with new:
@@ -44,15 +45,19 @@ public class UnitTest_ObjectPrototype
 			//Only with new:
 			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DataView/DataView#syntax
 
-			new string[] {"new Date(\"0\").ToString()", "Invalid Date"},
+			new string[] { "new Date(\"0\").ToString()", "Invalid Date"},
 			//Date without new returns string
 			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/Date#return_value
 
-			new string[] {"new Error(\"\").ToString()", "Error"},
-			new string[] {"GlobalThis.Error(\"\").ToString()", "Error"},
+			new string[] { "new Error(\"\").ToString()", "Error"},
+			new string[] { "GlobalThis.Error(\"\").ToString()", "Error"},
 
-			new string[] {"new Function(\"\",\"\").ToString()", "function anonymous() { [native code] }" },
-			new string[] {"GlobalThis.Function(\"\",\"\").ToString()", "function anonymous() { [native code] }" },
+			new string[] { "new FinalizationRegistry(() => { }).ToString()", "[object FinalizationRegistry]" },
+			//Only with new:
+			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/FinalizationRegistry/FinalizationRegistry#syntax
+
+			new string[] {" new Function(\"\",\"\").ToString()", "function anonymous() { [native code] }" },
+			new string[] {" GlobalThis.Function(\"\",\"\").ToString()", "function anonymous() { [native code] }" },
 
 			new string[] {"new Map().ToString()", "[object Map]" },
 			//Only with new:
@@ -66,6 +71,14 @@ public class UnitTest_ObjectPrototype
 
 			new string[] {"new Object().ToString()", "[object Object]"},
 			new string[] {"GlobalThis.Object().ToString()", "[object Object]"},
+
+			new string[] { "new Promise(() => { }).ToString()", "[object Promise]" },
+			//Only with new:
+			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/Promise#syntax
+
+			new string[] { "new Proxy(new {}, new {}).ToString()", "[object Object]" },
+			//Only with new:
+			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/Proxy#syntax
 
 			new string[] {"new RegExp(\"\").ToString()", "/(?:)/"},
 			//RegExp without new returns pattern
@@ -94,6 +107,10 @@ public class UnitTest_ObjectPrototype
 			//Only with new:
 			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap/WeakMap#syntax
 			
+			new string[] { "new WeakRef(new Object()).ToString()", "[object WeakRef]" },
+			//Only with new:
+			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakRef/WeakRef#syntax
+
 			new string[] { "new WeakSet().ToString()", "[object WeakSet]" }
 			//Only with new:
 			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakSet/WeakSet#syntax
@@ -123,6 +140,8 @@ public class UnitTest_ObjectPrototype
 		new Error("").ToString();
 		GlobalThis.Error("").ToString();
 
+		new FinalizationRegistry(() => { }).ToString();
+
 		new Function("","").ToString();
 		GlobalThis.Function("","").ToString();
 
@@ -132,6 +151,10 @@ public class UnitTest_ObjectPrototype
 
 		new Object().ToString();
 		GlobalThis.Object().ToString();
+
+		new Promise(() => { }).ToString();
+
+		new Proxy(new { }, new { }).ToString();
 
 		new RegExp("").ToString();
 
@@ -146,6 +169,8 @@ public class UnitTest_ObjectPrototype
 		new Int8Array().ToString();
 
 		new WeakMap().ToString();
+
+		new WeakRef(new Object()).ToString();
 
 		new WeakSet().ToString();
 	}
