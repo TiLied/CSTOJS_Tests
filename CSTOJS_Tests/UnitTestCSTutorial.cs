@@ -122,7 +122,7 @@ Console.WriteLine($""[{trimmedGreeting}]"");", _DefaultUnitOpt);
 		public void Trim3()
 		{
 			StringBuilder sb = _CSTOJS.GenerateOneFromString(@"string greeting = ""      Hello World!       "";
-trimmedGreeting = greeting.TrimEnd();
+string trimmedGreeting = greeting.TrimEnd();
 Console.WriteLine($""[{trimmedGreeting}]"");", _DefaultUnitOpt);
 
 			_Engine.Execute(sb.ToString());
@@ -132,7 +132,7 @@ Console.WriteLine($""[{trimmedGreeting}]"");", _DefaultUnitOpt);
 		public void Trim4()
 		{
 			StringBuilder sb = _CSTOJS.GenerateOneFromString(@"string greeting = ""      Hello World!       "";
-trimmedGreeting = greeting.Trim();
+string trimmedGreeting = greeting.Trim();
 Console.WriteLine($""[{trimmedGreeting}]"");", _DefaultUnitOpt);
 
 			_Engine.Execute(sb.ToString());

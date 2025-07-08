@@ -122,59 +122,6 @@ public class UnitTest_ObjectPrototype
 
 		_CSTOJS = new CSTOJS();
 	}
-	private static void CSTest() 
-	{
-		new Array().ToString();
-		GlobalThis.Array().ToString();
-
-		new ArrayBuffer(0).ToString();
-
-		GlobalThis.BigInt(0).ToString();
-
-		new Boolean(true).ToString();
-
-		new DataView(new ArrayBuffer(0)).ToString();
-
-		new Date("0").ToString();
-
-		new Error("").ToString();
-		GlobalThis.Error("").ToString();
-
-		new FinalizationRegistry(() => { }).ToString();
-
-		new Function("","").ToString();
-		GlobalThis.Function("","").ToString();
-
-		new Map().ToString();
-
-		new Number(0).ToString();
-
-		new Object().ToString();
-		GlobalThis.Object().ToString();
-
-		new Promise(() => { }).ToString();
-
-		new Proxy(new { }, new { }).ToString();
-
-		new RegExp("").ToString();
-
-		new Set().ToString();
-
-		new SharedArrayBuffer(0).ToString();
-
-		new String().ToString();
-
-		GlobalThis.Symbol().ToString();
-
-		new Int8Array().ToString();
-
-		new WeakMap().ToString();
-
-		new WeakRef(new Object()).ToString();
-
-		new WeakSet().ToString();
-	}
-
 
 	[Theory]
 	[MemberData(nameof(TestToStringData))]

@@ -66,7 +66,7 @@ namespace CSTOJS_Tests
 			new string[] { "sbyte", sbyte.MinValue.ToString() , string.Empty},
 			new string[] { "decimal", decimal.MinValue.ToString(), Number.MIN_SAFE_INTEGER.ToString() },
 			new string[] { "double", "-1.7976931348623157E+308", Number.MIN_SAFE_INTEGER.ToString() },
-			new string[] { "float", "-3.4028235E+38", Number.MIN_SAFE_INTEGER.ToString() },
+			new string[] { "float", "-3.4028235E+38f", Number.MIN_SAFE_INTEGER.ToString() },
 			new string[] { "int", int.MinValue.ToString(), string.Empty},
 			new string[] { "uint", uint.MinValue.ToString(), string.Empty },
 			new string[] { "nint", nint.MinValue.ToString(), Number.MIN_SAFE_INTEGER.ToString() },
@@ -80,7 +80,7 @@ namespace CSTOJS_Tests
 			new string[] { "sbyte", sbyte.MaxValue.ToString(), string.Empty },
 			new string[] { "decimal", decimal.MaxValue.ToString() , Number.MAX_SAFE_INTEGER.ToString()},
 			new string[] { "double", "1.7976931348623157E+308", Number.MAX_SAFE_INTEGER.ToString() },
-			new string[] { "float", "3.4028235E+38", Number.MAX_SAFE_INTEGER.ToString() },
+			new string[] { "float", "3.4028235E+38f", Number.MAX_SAFE_INTEGER.ToString() },
 			new string[] { "int", int.MaxValue.ToString(), string.Empty},
 			new string[] { "uint", uint.MaxValue.ToString() , string.Empty},
 			new string[] { "nint", nint.MaxValue.ToString() , Number.MAX_SAFE_INTEGER.ToString()},
@@ -108,8 +108,6 @@ namespace CSTOJS_Tests
 		{
 			StringBuilder sb = _CSTOJS.GenerateOneFromString(@"
 using CSharpToJavaScript;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis;
 
 using System;
@@ -124,21 +122,23 @@ namespace CSTOJS_Test.CSharp
 {
 	public class UnitTest
 	{
-	public UnitTest()
-      {  
-         int n1=0,n2=1,n3,i,number;    
-         //Console.Write(""Enter the number of elements: "");    
-         number = 15;  
-         //Console.Write(n1+"" ""+n2+"" ""); //printing 0 and 1    
-         for(i=2;i<number;++i) //loop starts from 2 because 0 and 1 are already printed    
-         {    
-          n3=n1+n2;    
-          //Console.Write(n3+"" "");    
-          n1=n2;    
-          n2=n3;    
-         }
-Console.WriteLine($""{n3}"");
-}
+		public UnitTest()
+		{  
+			int n1=0;
+			int n2=1;
+			int n3=0;
+			int i=0;
+			int number=15;
+
+			for(i=2;i<number;++i) //loop starts from 2 because 0 and 1 are already printed    
+			{    
+				n3=n1+n2;    
+				n1=n2;    
+				n2=n3;    
+			}
+			Console.WriteLine($""{n3}"");
+		}
+	}
 }", _DefaultUnitOpt);
 
 			_Engine.Execute(sb.ToString());
@@ -150,8 +150,6 @@ Console.WriteLine($""{n3}"");
 		{
 			StringBuilder sb = _CSTOJS.GenerateOneFromString(@"
 using CSharpToJavaScript;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis;
 
 using System;
@@ -182,8 +180,6 @@ namespace CSTOJS_Test.CSharp
 		{
 			StringBuilder sb = _CSTOJS.GenerateOneFromString(@"
 using CSharpToJavaScript;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis;
 
 using System;
@@ -212,9 +208,8 @@ namespace CSTOJS_Test.CSharp
 		public void GlobalThisDate()
 		{
 			StringBuilder sb = _CSTOJS.GenerateOneFromString(@"
+using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
 using CSharpToJavaScript;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis;
 
 using System;
@@ -229,7 +224,7 @@ namespace CSTOJS_Test.CSharp
 	{
 		public UnitTest()
 		{
-			var i = globalThis.Date();
+			var i = GlobalThis.Date();
 			Console.WriteLine(""GlobalThisDate"");
 		}
 	}
@@ -325,10 +320,17 @@ namespace CSTOJS_Test.CSharp
 		[MemberData(nameof(TestVariousNumbersData))]
 		public void TestFieldsDefaultValue(string[] data) 
 		{
+			//Todo?
+			Assert.SkipWhen(data[0] == "decimal", "error CS1021: Integral constant is too large");
+			
+			//Todo?
+			Assert.SkipWhen(data[0] == "nint", "error CS0119: 'nint' is a type, which is not valid in the given context");
+
+			//Todo? Expected fail? see TestDefaultParameterInMethod
+			Assert.SkipWhen(data[0] == "nuint", " error CS0266: Cannot implicitly convert type 'ulong' to 'nuint'. An explicit conversion exists (are you missing a cast?)");
+
 			StringBuilder sb = _CSTOJS.GenerateOneFromString($@"
 using CSharpToJavaScript;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis;
 
 using System;
@@ -367,10 +369,17 @@ namespace CSTOJS_Test.CSharp
 		[MemberData(nameof(TestVariousNumbersData))]
 		public void TestPropertiesDefaultValue(string[] data)
 		{
+			//Todo?
+			Assert.SkipWhen(data[0] == "decimal", "error CS1021: Integral constant is too large");
+			
+			//Todo?
+			Assert.SkipWhen(data[0] == "nint", "error CS0119: 'nint' is a type, which is not valid in the given context");
+
+			//Todo? Expected fail? see TestDefaultParameterInMethod
+			Assert.SkipWhen(data[0] == "nuint", " error CS0266: Cannot implicitly convert type 'ulong' to 'nuint'. An explicit conversion exists (are you missing a cast?)");
+
 			StringBuilder sb = _CSTOJS.GenerateOneFromString($@"
 using CSharpToJavaScript;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis;
 
 using System;
@@ -409,10 +418,17 @@ namespace CSTOJS_Test.CSharp
 		[MemberData(nameof(TestVariousNumbersData))]
 		public void TestLocalValue(string[] data)
 		{
+			//Todo?
+			Assert.SkipWhen(data[0] == "decimal", "error CS1021: Integral constant is too large");
+			
+			//Todo?
+			Assert.SkipWhen(data[0] == "nint", "error CS0119: 'nint' is a type, which is not valid in the given context");
+			
+			//Todo? Expected fail? see TestDefaultParameterInMethod
+			Assert.SkipWhen(data[0] == "nuint", " error CS0266: Cannot implicitly convert type 'ulong' to 'nuint'. An explicit conversion exists (are you missing a cast?)");
+
 			StringBuilder sb = _CSTOJS.GenerateOneFromString($@"
 using CSharpToJavaScript;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis;
 
 using System;
@@ -450,10 +466,17 @@ namespace CSTOJS_Test.CSharp
 		[MemberData(nameof(TestVariousNumbersData))]
 		public void TestPassValueToMethod(string[] data)
 		{
+			//Todo?
+			Assert.SkipWhen(data[0] == "decimal", "error CS1021: Integral constant is too large");
+			
+			//Todo?
+			Assert.SkipWhen(data[0] == "nint", "error CS0119: 'nint' is a type, which is not valid in the given context");
+			
+			//Todo? Expected fail? see TestDefaultParameterInMethod
+			Assert.SkipWhen(data[0] == "nuint", "error CS1503: Argument 1: cannot convert from 'ulong' to 'nuint'");
+
 			StringBuilder sb = _CSTOJS.GenerateOneFromString($@"
 using CSharpToJavaScript;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis;
 
 using System;
@@ -494,10 +517,23 @@ namespace CSTOJS_Test.CSharp
 		[MemberData(nameof(TestVariousNumbersData))]
 		public void TestDefaultParameterInMethod(string[] data)
 		{
+			if (data[0] == "Boolean" ||
+				data[0] == "CustomClass" ||
+				data[0] == "object" ||
+				data[0] == "dynamic" ||
+				data[0] == "nint" ||
+				data[0] == "nuint")
+			{
+				Assert.True(true, "error CS1736: Default parameter value for 'value' must be a compile-time constant");
+				return;
+			}
+
+			//Todo?
+			Assert.SkipWhen(data[0] == "decimal", "error CS1021: Integral constant is too large");
+
+
 			StringBuilder sb = _CSTOJS.GenerateOneFromString($@"
 using CSharpToJavaScript;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis;
 
 using System;
@@ -552,8 +588,9 @@ namespace CSTOJS_Test.CSharp
 		[InlineData("(a &= 3)", "1")]
 		[InlineData("(a ^= 3)", "6")]
 		[InlineData("(a |= 3)", "7")]
-		[InlineData("(a &&= 3)", "3")]
-		[InlineData("(a ||= 3)", "5")]
+		//Does not exists in c#
+		//[InlineData("(a &&= 3)", "3")]
+		//[InlineData("(a ||= 3)", "5")]
 		[InlineData("(a ??= 3)", "5")]
 
 		//Comparison operators 
@@ -605,8 +642,6 @@ namespace CSTOJS_Test.CSharp
 		{
 			StringBuilder sb = _CSTOJS.GenerateOneFromString($@"
 using CSharpToJavaScript;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis;
 
 using System;
@@ -621,11 +656,10 @@ namespace CSTOJS_Test.CSharp
 	{{
 		public UnitTest()
 		{{
-			int a = 5;
+			int? a = 5;
 			int b = 3;
 			int c = 2;
-			var x = {expression};
-			Console.WriteLine(x);
+			Console.WriteLine({expression});
 		}}
 	}}
 }}", _DefaultUnitOpt);

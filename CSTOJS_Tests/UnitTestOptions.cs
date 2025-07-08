@@ -33,11 +33,11 @@ namespace CSTOJS_Tests
 
 		[Theory]
 		[InlineData("true", @"function TestMethod() {
-
+	return 0;
 }")]
 		[InlineData("false", @"function TestMethod()
 {
-
+	return 0;
 }")]
 		public void TestKeepBraceOnTheSameLine(string value, string expected)
 		{
@@ -48,7 +48,7 @@ namespace CSTOJS_Tests
 
 			StringBuilder sb = _CSTOJS.GenerateOneFromString(@"int TestMethod()
 {
-
+	return 0;
 }", options);
 
 			Assert.Equal(expected, sb.ToString());
@@ -56,9 +56,11 @@ namespace CSTOJS_Tests
 		[Theory]
 		[InlineData("true", @"function TestMethod()
 {
+    return 0;
 }")]
 		[InlineData("false", @"function TestMethod()
 {
+return 0;
 
 }")]
 		public void TestNormalizeWhitespace(string value, string expected)
@@ -75,6 +77,7 @@ namespace CSTOJS_Tests
 
 			StringBuilder sb = _CSTOJS.GenerateOneFromString(@"int TestMethod()
 {
+return 0;
 
 }", options);
 
@@ -88,6 +91,7 @@ namespace CSTOJS_Tests
 	{
 			
 	}
+	return 0;
 }")]
 		[InlineData("false", @"function TestMethod()
 {
@@ -95,6 +99,7 @@ namespace CSTOJS_Tests
 	{
 			
 	}
+	return 0;
 }")]
 		public void TestUseStrictEquality(string value, string expected)
 		{
@@ -109,6 +114,7 @@ namespace CSTOJS_Tests
 	{
 			
 	}
+	return 0;
 }", options);
 
 			Assert.Equal(expected, sb.ToString());
@@ -120,10 +126,10 @@ namespace CSTOJS_Tests
 		{
 			CSTOJSOptions options = new()
 			{
-				CustomCSNamesToJS = [ new("Asd", "console"), new("Dsa", "log") ]
+				CustomCSNamesToJS = [ new("Console", "console"), new("Beep", "log") ]
 			};
 
-			StringBuilder sb = _CSTOJS.GenerateOneFromString(@"Asd.Dsa();", options);
+			StringBuilder sb = _CSTOJS.GenerateOneFromString(@"Console.Beep();", options);
 
 			Assert.Equal("console.log();", sb.ToString());
 		}

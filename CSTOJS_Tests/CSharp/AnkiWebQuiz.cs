@@ -12,7 +12,6 @@ namespace UnitTestAnkiWebQuiz;
 	{
 		private dynamic _Options = new Object();
 		private dynamic _Decks = new Object();
-
 		private string _DeckId;
 
 		public AnkiWebQuiz()
