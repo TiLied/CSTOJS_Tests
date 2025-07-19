@@ -9,104 +9,195 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 
-namespace CSTOJS_Tests
+namespace CSTOJS_Tests;
+
+public class UnitTest
 {
-	public class UnitTest
+	private readonly Engine _Engine = new(cfg => cfg.Culture(CultureInfo.InvariantCulture));
+
+	private string _ConsoleStr = string.Empty;
+
+	private CSTOJS _CSTOJS = new();
+
+	private readonly CSTOJSOptions _DefaultUnitOpt = new()
 	{
-		private readonly Engine _Engine = new(cfg => cfg.Culture(CultureInfo.InvariantCulture));
-		private string _ConsoleStr = string.Empty;
-		private CSTOJS _CSTOJS = new();
-		private readonly CSTOJSOptions _DefaultUnitOpt = new()
-		{
-			AddSBAtTheTop = new("let console = { log: log };"),
-			AddSBAtTheBottom = new("let unitTest = new UnitTest();")
-		};
+		AddSBAtTheTop = new("let console = { log: log };"),
+		AddSBAtTheBottom = new("let unitTest = new UnitTest();")
+	};
 
-		//0=CS Type Name
-		//1=CS Value
-		//2=JS(Jint) Value (expected str)
-		public static TheoryData<string[]> TestData = new()
-		{
-			new string[] { "bool", "true", "True" },
-			new string[] { "bool", "false", "False" },
+	public static TheoryDataRow<TestData>[] TestData_Data =
+	[
+		new (new("bool", "true", "True")),
+			new (new("bool", "false", "False" )),
 
-			new string[] { "char", "'c'", "c"},
+			new (new("char", "'c'", "c")),
 
-			new string[] { "object", "new()", "System.Dynamic.ExpandoObject" },
-			new string[] { "object", "new object()", "System.Dynamic.ExpandoObject" },
+			new (new("object", "new()", "System.Dynamic.ExpandoObject" )
+			{
+				SkipMethods = new()
+				{
+					[ nameof(TestDefaultParameterInMethod)] = "error CS1736: Default parameter value for 'value' must be a compile-time constant"
+				}
+			}),
+			new (new("object", "new object()", "System.Dynamic.ExpandoObject" )
+			{
+				SkipMethods = new()
+				{
+					[ nameof(TestDefaultParameterInMethod)] = "error CS1736: Default parameter value for 'value' must be a compile-time constant"
+				}
+			}),
 
-			new string[] { "string", "\"str\"", "str" },
-			new string[] { "string?", "null", "null" },
+			new (new("string", "\"str\"", "str" )),
+			new (new("string?", "null", "null" )),
 
-			new string[] { "dynamic", "0", string.Empty },
+			new (new("dynamic", "0", string.Empty )
+			{
+				SkipMethods = new()
+				{
+					[ nameof(TestDefaultParameterInMethod)] = "error CS1763: 'value' is of type 'dynamic'. A default parameter value of a reference type other than string can only be initialized with null"
+				}
+			}),
 
-			new string[] { "CustomClass", "new()", "System.Dynamic.ExpandoObject" },
-			new string[] { "CustomClass", "new CustomClass()", "System.Dynamic.ExpandoObject" },
-			new string[] { "CustomClass?", "null", "null" },
+			new (new("CustomClass", "new()", "System.Dynamic.ExpandoObject")
+			{
+				SkipMethods = new()
+				{
+					[ nameof(TestDefaultParameterInMethod)] = "error CS1736: Default parameter value for 'value' must be a compile-time constant"
+				}
+			}),
+			new (new("CustomClass", "new CustomClass()", "System.Dynamic.ExpandoObject" )
+			{
+				SkipMethods = new()
+				{
+					[ nameof(TestDefaultParameterInMethod)] = "error CS1736: Default parameter value for 'value' must be a compile-time constant"
+				}
+			}),
+			new (new("CustomClass?", "null", "null" )),
 
-			new string[] { "Boolean", "new Boolean(true)", "True" }
-		};
-		
-		public static TheoryData<string[]> TestVariousNumbersData = new()
-		{
-			new string[] { "decimal", "3_000.5m", "3000.5" },
-			new string[] { "decimal", "400.75M", "400.75" },
+			new (new("Boolean", "new Boolean(true)", "True" )
+			{
+				SkipMethods = new()
+				{
+					[ nameof(TestDefaultParameterInMethod)] = "error CS1736: Default parameter value for 'value' must be a compile-time constant"
+				}
+			})
+	];
+	public static TheoryDataRow<TestData>[] TestData_Numbers =
+	[
+		new (new("byte", byte.MinValue.ToString(), string.Empty )),
+			new (new("sbyte", sbyte.MinValue.ToString() , string.Empty)),
+			new (new("decimal", decimal.MinValue.ToString(), Number.MIN_SAFE_INTEGER.ToString())
+			{
+				SkipMethods = new()
+				{ 
+					//Todo?
+					[ nameof(TestFieldsDefaultValue) ] = "error CS1021: Integral constant is too large",
+					[ nameof(TestDefaultParameterInMethod) ] = "error CS1021: Integral constant is too large",
+					[ nameof(TestLocalValue) ] = "error CS1021: Integral constant is too large",
+					[ nameof(TestPassValueToMethod) ] = "error CS1021: Integral constant is too large",
+					[ nameof(TestPropertiesDefaultValue) ] = "error CS1021: Integral constant is too large"
+				}
+			}),
+			new (new("double", "-1.7976931348623157E+308", Number.MIN_SAFE_INTEGER.ToString())),
+			new (new("float", "-3.4028235E+38f", Number.MIN_SAFE_INTEGER.ToString())),
+			new (new("int", int.MinValue.ToString(), string.Empty)),
+			new (new("uint", uint.MinValue.ToString(), string.Empty)),
+			new (new("nint", nint.MinValue.ToString(), Number.MIN_SAFE_INTEGER.ToString() )
+			{
+				SkipMethods = new()
+				{ 
+					//Todo?
+					[ nameof(TestFieldsDefaultValue) ] = "error CS0266: Cannot implicitly convert type 'long' to 'nint'. An explicit conversion exists (are you missing a cast?)",
+					[ nameof(TestDefaultParameterInMethod)] = "error CS1750: A value of type 'long' cannot be used as a default parameter because there are no standard conversions to type 'nint'",
+					[ nameof(TestLocalValue) ] = "error CS0266: Cannot implicitly convert type 'long' to 'nint'. An explicit conversion exists (are you missing a cast?)",
+					[ nameof(TestPassValueToMethod) ] = "error CS1503: Argument 1: cannot convert from 'long' to 'nint'",
+					[ nameof(TestPropertiesDefaultValue) ] = "error CS0266: Cannot implicitly convert type 'long' to 'nint'. An explicit conversion exists (are you missing a cast?)",
 
-			new string[] { "double", "3D", "3" },
-			new string[] { "double", "4d", "4" },
-			new string[] { "double", "3.934_001", "3.934001" },
-			new string[] { "double", "3.141592653589793", "3.141592653589793"},
+				}
+			}),
+			new (new("nuint", nuint.MinValue.ToString(), string.Empty)),
+			new (new("long", long.MinValue.ToString(), Number.MIN_SAFE_INTEGER.ToString())),
+			new (new("ulong", ulong.MinValue.ToString(), string.Empty)),
+			new (new("short", short.MinValue.ToString() , string.Empty)),
+			new (new("ushort", ushort.MinValue.ToString(), string.Empty )),
 
-			new string[] { "float", "3_000.5F", "3000.5" },
-			new string[] { "float", "5.4f", "5.4" }
-		};
-		public static TheoryData<string[]> TestNumbersData = new()
-		{
-			new string[] { "byte", byte.MinValue.ToString(), string.Empty },
-			new string[] { "sbyte", sbyte.MinValue.ToString() , string.Empty},
-			new string[] { "decimal", decimal.MinValue.ToString(), Number.MIN_SAFE_INTEGER.ToString() },
-			new string[] { "double", "-1.7976931348623157E+308", Number.MIN_SAFE_INTEGER.ToString() },
-			new string[] { "float", "-3.4028235E+38f", Number.MIN_SAFE_INTEGER.ToString() },
-			new string[] { "int", int.MinValue.ToString(), string.Empty},
-			new string[] { "uint", uint.MinValue.ToString(), string.Empty },
-			new string[] { "nint", nint.MinValue.ToString(), Number.MIN_SAFE_INTEGER.ToString() },
-			new string[] { "nuint", nuint.MinValue.ToString(), string.Empty },
-			new string[] { "long", long.MinValue.ToString(), Number.MIN_SAFE_INTEGER.ToString() },
-			new string[] { "ulong", ulong.MinValue.ToString(), string.Empty },
-			new string[] { "short", short.MinValue.ToString() , string.Empty},
-			new string[] { "ushort", ushort.MinValue.ToString(), string.Empty },
+			new (new("byte", byte.MaxValue.ToString() , string.Empty)),
+			new (new("sbyte", sbyte.MaxValue.ToString(), string.Empty)),
+			new (new("decimal", decimal.MaxValue.ToString() , Number.MAX_SAFE_INTEGER.ToString())
+			{
+				SkipMethods = new()
+				{
+					//Todo?
+					[ nameof(TestFieldsDefaultValue)] = "error CS1021: Integral constant is too large",
+					[ nameof(TestDefaultParameterInMethod)] = "error CS1021: Integral constant is too large",
+					[ nameof(TestLocalValue) ] = "error CS1021: Integral constant is too large",
+					[ nameof(TestPassValueToMethod) ] = "error CS1021: Integral constant is too large",
+					[ nameof(TestPropertiesDefaultValue) ] = "error CS1021: Integral constant is too large"
+				}
+			}),
+			new (new("double", "1.7976931348623157E+308", Number.MAX_SAFE_INTEGER.ToString())),
+			new (new("float", "3.4028235E+38f", Number.MAX_SAFE_INTEGER.ToString() )),
+			new (new("int", int.MaxValue.ToString(), string.Empty)),
+			new (new("uint", uint.MaxValue.ToString() , string.Empty)),
+			new (new("nint", nint.MaxValue.ToString() , Number.MAX_SAFE_INTEGER.ToString())
+			{
+				SkipMethods = new()
+				{
+					//Todo?
+					[ nameof(TestFieldsDefaultValue)] = "error CS0266: Cannot implicitly convert type 'long' to 'nint'. An explicit conversion exists (are you missing a cast?)",
+					[ nameof(TestDefaultParameterInMethod)] = "error CS1750: A value of type 'long' cannot be used as a default parameter because there are no standard conversions to type 'nint'",
+					[ nameof(TestLocalValue) ] = "error CS0266: Cannot implicitly convert type 'long' to 'nint'. An explicit conversion exists (are you missing a cast?)",
+					[ nameof(TestPassValueToMethod) ] = "error CS1503: Argument 1: cannot convert from 'long' to 'nint'",
+					[ nameof(TestPropertiesDefaultValue) ] = "error CS0266: Cannot implicitly convert type 'long' to 'nint'. An explicit conversion exists (are you missing a cast?)",
+				}
+			}),
+			new (new("nuint", nuint.MaxValue.ToString() , Number.MAX_SAFE_INTEGER.ToString())
+			{
+				SkipMethods = new()
+				{
+					//Todo? Expected fail? see TestDefaultParameterInMethod
+					[ nameof(TestFieldsDefaultValue)] = "error CS0266: Cannot implicitly convert type 'ulong' to 'nuint'. An explicit conversion exists (are you missing a cast?)",
+					[ nameof(TestDefaultParameterInMethod)] = "error CS1750: A value of type 'ulong' cannot be used as a default parameter because there are no standard conversions to type 'nuint'",
+					[ nameof(TestLocalValue)] = "error CS0266: Cannot implicitly convert type 'ulong' to 'nuint'. An explicit conversion exists (are you missing a cast?)",
+					[ nameof(TestPassValueToMethod) ] = "error CS1503: Argument 1: cannot convert from 'ulong' to 'nuint'",
+					[ nameof(TestPropertiesDefaultValue)] = "error CS0266: Cannot implicitly convert type 'ulong' to 'nuint'. An explicit conversion exists (are you missing a cast?)",
+				}
+			}),
+			new (new("long", long.MaxValue.ToString(), Number.MAX_SAFE_INTEGER.ToString())),
+			new (new("ulong", ulong.MaxValue.ToString() , Number.MAX_SAFE_INTEGER.ToString())),
+			new (new("short", short.MaxValue.ToString() , string.Empty)),
+			new (new("ushort", ushort.MaxValue.ToString() , string.Empty))
+	];
+	public static TheoryDataRow<TestData>[] TestData_VariousNumbers =
+	[
+		new(new("decimal", "3_000.5m", "3000.5")),
+			new(new("decimal", "400.75M", "400.75")),
 
-			new string[] { "byte", byte.MaxValue.ToString() , string.Empty},
-			new string[] { "sbyte", sbyte.MaxValue.ToString(), string.Empty },
-			new string[] { "decimal", decimal.MaxValue.ToString() , Number.MAX_SAFE_INTEGER.ToString()},
-			new string[] { "double", "1.7976931348623157E+308", Number.MAX_SAFE_INTEGER.ToString() },
-			new string[] { "float", "3.4028235E+38f", Number.MAX_SAFE_INTEGER.ToString() },
-			new string[] { "int", int.MaxValue.ToString(), string.Empty},
-			new string[] { "uint", uint.MaxValue.ToString() , string.Empty},
-			new string[] { "nint", nint.MaxValue.ToString() , Number.MAX_SAFE_INTEGER.ToString()},
-			new string[] { "nuint", nuint.MaxValue.ToString() , Number.MAX_SAFE_INTEGER.ToString()},
-			new string[] { "long", long.MaxValue.ToString(), Number.MAX_SAFE_INTEGER.ToString() },
-			new string[] { "ulong", ulong.MaxValue.ToString() , Number.MAX_SAFE_INTEGER.ToString()},
-			new string[] { "short", short.MaxValue.ToString() , string.Empty},
-			new string[] { "ushort", ushort.MaxValue.ToString() , string.Empty},
-		};
+			new(new("double", "3D", "3")),
+			new(new("double", "4d", "4")),
+			new(new("double", "3.934_001", "3.934001")),
+			new(new("double", "3.141592653589793", "3.141592653589793")),
 
-		public UnitTest() 
-		{
-			//https://stackoverflow.com/a/45117890
-			CultureInfo info = CultureInfo.InvariantCulture;
-			Thread.CurrentThread.CurrentCulture = info;
-			Thread.CurrentThread.CurrentUICulture = Thread.CurrentThread.CurrentCulture;
+			new(new("float", "3_000.5F", "3000.5")),
+			new(new("float", "5.4f", "5.4"))
+	];
 
-			_Engine.SetValue("log", new Action<object>(ConsoleOutPut));
+	public UnitTest()
+	{
+		//https://stackoverflow.com/a/45117890
+		CultureInfo info = CultureInfo.InvariantCulture;
+		Thread.CurrentThread.CurrentCulture = info;
+		Thread.CurrentThread.CurrentUICulture = Thread.CurrentThread.CurrentCulture;
 
-			_CSTOJS = new CSTOJS();
-		}
+		_Engine.SetValue("log", new Action<object>(ConsoleOutPut));
 
-		[Fact]
-		public void Fibonacci()
-		{
-			StringBuilder sb = _CSTOJS.GenerateOneFromString(@"
+		_CSTOJS = new CSTOJS();
+	}
+
+	[Fact]
+	public void Fibonacci()
+	{
+		StringBuilder sb = _CSTOJS.GenerateOneFromString(@"
 using CSharpToJavaScript;
 using Microsoft.CodeAnalysis;
 
@@ -141,14 +232,14 @@ namespace CSTOJS_Test.CSharp
 	}
 }", _DefaultUnitOpt);
 
-			_Engine.Execute(sb.ToString());
-			Assert.Equal("377", _ConsoleStr);
-		}
+		_Engine.Execute(sb.ToString());
+		Assert.Equal("377", _ConsoleStr);
+	}
 
-		[Fact]
-		public void HelloWorld()
-		{
-			StringBuilder sb = _CSTOJS.GenerateOneFromString(@"
+	[Fact]
+	public void HelloWorld()
+	{
+		StringBuilder sb = _CSTOJS.GenerateOneFromString(@"
 using CSharpToJavaScript;
 using Microsoft.CodeAnalysis;
 
@@ -171,14 +262,14 @@ namespace CSTOJS_Test.CSharp
 	}
 }", _DefaultUnitOpt);
 
-			_Engine.Execute(sb.ToString());
-			Assert.Equal("HelloWorld!", _ConsoleStr);
-		}
+		_Engine.Execute(sb.ToString());
+		Assert.Equal("HelloWorld!", _ConsoleStr);
+	}
 
-		[Fact]
-		public void HelloWorldField()
-		{
-			StringBuilder sb = _CSTOJS.GenerateOneFromString(@"
+	[Fact]
+	public void HelloWorldField()
+	{
+		StringBuilder sb = _CSTOJS.GenerateOneFromString(@"
 using CSharpToJavaScript;
 using Microsoft.CodeAnalysis;
 
@@ -200,14 +291,14 @@ namespace CSTOJS_Test.CSharp
 	}
 }", _DefaultUnitOpt);
 
-			_Engine.Execute(sb.ToString());
-			Assert.Equal("HelloWorldField!", _ConsoleStr);
-		}
+		_Engine.Execute(sb.ToString());
+		Assert.Equal("HelloWorldField!", _ConsoleStr);
+	}
 
-		[Fact]
-		public void GlobalThisDate()
-		{
-			StringBuilder sb = _CSTOJS.GenerateOneFromString(@"
+	[Fact]
+	public void GlobalThisDate()
+	{
+		StringBuilder sb = _CSTOJS.GenerateOneFromString(@"
 using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
 using CSharpToJavaScript;
 using Microsoft.CodeAnalysis;
@@ -230,106 +321,102 @@ namespace CSTOJS_Test.CSharp
 	}
 }", _DefaultUnitOpt);
 
-			_Engine.Execute(sb.ToString());
-			Assert.Equal("GlobalThisDate", _ConsoleStr);
-		}
+		_Engine.Execute(sb.ToString());
+		Assert.Equal("GlobalThisDate", _ConsoleStr);
+	}
 
 
 
 
-		//
-		//
-		//Old tests! Should probably be deleted?
-		[Fact]
-		public void AnkiWebQuiz()
-		{
-			Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "TODO!");
-			Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "TODO!");
+	//
+	//
+	//Old tests! Should probably be deleted?
+	[Fact]
+	public void AnkiWebQuiz()
+	{
+		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "TODO!");
+		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "TODO!");
 
-			List<StringBuilder> lSB = _CSTOJS.GenerateOne("..\\..\\..\\CSharp\\AnkiWebQuiz.cs");
+		List<StringBuilder> lSB = _CSTOJS.GenerateOne("..\\..\\..\\CSharp\\AnkiWebQuiz.cs");
 
-			_Engine.Execute(lSB[0].ToString());
-			Assert.Equal("", _ConsoleStr);
-		}
-		[Fact]
-		public void Test4()
-		{
-			Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "TODO!");
-			Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "TODO!");
+		_Engine.Execute(lSB[0].ToString());
+		Assert.Equal("", _ConsoleStr);
+	}
+	[Fact]
+	public void Test4()
+	{
+		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "TODO!");
+		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "TODO!");
 
-			List<StringBuilder> lSB = _CSTOJS.GenerateOne("..\\..\\..\\CSharp\\test4.cs");
+		List<StringBuilder> lSB = _CSTOJS.GenerateOne("..\\..\\..\\CSharp\\test4.cs");
 
-			_Engine.Execute(lSB[0].ToString());
-			Assert.Equal("", _ConsoleStr);
-		}
-		[Fact]
-		public void Test6()
-		{
-			Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "TODO!");
-			Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "TODO!");
+		_Engine.Execute(lSB[0].ToString());
+		Assert.Equal("", _ConsoleStr);
+	}
+	[Fact]
+	public void Test6()
+	{
+		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "TODO!");
+		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "TODO!");
 
-			List<StringBuilder> lSB = _CSTOJS.GenerateOne("..\\..\\..\\CSharp\\test6.cs");
+		List<StringBuilder> lSB = _CSTOJS.GenerateOne("..\\..\\..\\CSharp\\test6.cs");
 
-			_Engine.Execute(lSB[0].ToString());
-			Assert.Equal("", _ConsoleStr);
-		}
+		_Engine.Execute(lSB[0].ToString());
+		Assert.Equal("", _ConsoleStr);
+	}
 
-		[Fact]
-		public void TestNBody()
-		{
-			Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "TODO!");
-			Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "TODO!");
+	[Fact]
+	public void TestNBody()
+	{
+		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "TODO!");
+		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "TODO!");
 
-			List<StringBuilder> lSB = _CSTOJS.GenerateOne("..\\..\\..\\CSharp\\NBody.cs");
+		List<StringBuilder> lSB = _CSTOJS.GenerateOne("..\\..\\..\\CSharp\\NBody.cs");
 
-			_Engine.Execute(lSB[0].ToString());
-			Assert.Equal("", _ConsoleStr);
-		}
+		_Engine.Execute(lSB[0].ToString());
+		Assert.Equal("", _ConsoleStr);
+	}
 
-		[Fact]
-		public void Test7()
-		{
-			Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "TODO!");
-			Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "TODO!");
+	[Fact]
+	public void Test7()
+	{
+		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "TODO!");
+		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "TODO!");
 
-			List<StringBuilder> lSB = _CSTOJS.GenerateOne("..\\..\\..\\CSharp\\Test7.cs", _DefaultUnitOpt);
+		List<StringBuilder> lSB = _CSTOJS.GenerateOne("..\\..\\..\\CSharp\\Test7.cs", _DefaultUnitOpt);
 
-			_Engine.Execute(lSB[0].ToString());
-			Assert.Equal("", _ConsoleStr);
-		}
+		_Engine.Execute(lSB[0].ToString());
+		Assert.Equal("", _ConsoleStr);
+	}
 
-		[Fact]
-		public void Test8()
-		{
-			Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "TODO!");
-			Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "TODO!");
+	[Fact]
+	public void Test8()
+	{
+		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "TODO!");
+		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "TODO!");
 
-			List<StringBuilder> lSB = _CSTOJS.GenerateOne("..\\..\\..\\CSharp\\Test8.cs", _DefaultUnitOpt);
+		List<StringBuilder> lSB = _CSTOJS.GenerateOne("..\\..\\..\\CSharp\\Test8.cs", _DefaultUnitOpt);
 
 
-			_Engine.Execute(lSB[0].ToString());
-			Assert.Equal("Done!", _ConsoleStr);
-		}
-		//
-		//
-		//
+		_Engine.Execute(lSB[0].ToString());
+		Assert.Equal("Done!", _ConsoleStr);
+	}
+	//
+	//
+	//
 
-		[Theory]
-		[MemberData(nameof(TestData))]
-		[MemberData(nameof(TestNumbersData))]
-		[MemberData(nameof(TestVariousNumbersData))]
-		public void TestFieldsDefaultValue(string[] data) 
-		{
-			//Todo?
-			Assert.SkipWhen(data[0] == "decimal", "error CS1021: Integral constant is too large");
-			
-			//Todo?
-			Assert.SkipWhen(data[0] == "nint", "error CS0119: 'nint' is a type, which is not valid in the given context");
+	[Theory]
+	[MemberData(nameof(TestData_Data))]
+	[MemberData(nameof(TestData_Numbers))]
+	[MemberData(nameof(TestData_VariousNumbers))]
+	public void TestFieldsDefaultValue(TestData data)
+	{
+		string methodName = nameof(TestFieldsDefaultValue);
 
-			//Todo? Expected fail? see TestDefaultParameterInMethod
-			Assert.SkipWhen(data[0] == "nuint", " error CS0266: Cannot implicitly convert type 'ulong' to 'nuint'. An explicit conversion exists (are you missing a cast?)");
+		if (data.SkipMethods.TryGetValue(methodName, out string? reason))
+			Assert.SkipWhen(true, reason);
 
-			StringBuilder sb = _CSTOJS.GenerateOneFromString($@"
+		StringBuilder sb = _CSTOJS.GenerateOneFromString($@"
 using CSharpToJavaScript;
 using Microsoft.CodeAnalysis;
 
@@ -343,7 +430,7 @@ namespace CSTOJS_Test.CSharp
 {{
 	public class UnitTest
 	{{
-		private {data[0]} _TestField = {data[1]};
+		private {data.CSType} _TestField = {data.CSValue};
 		public UnitTest()
 		{{
 			Console.WriteLine(_TestField);
@@ -356,29 +443,25 @@ namespace CSTOJS_Test.CSharp
 		}}
 	}}
 }}", _DefaultUnitOpt);
-			
-			_Engine.Execute(sb.ToString());
 
-			string strExpected = data[2] == string.Empty ? data[1] : data[2];
-			Assert.Equal(strExpected, _ConsoleStr);
-		}
+		_Engine.Execute(sb.ToString());
 
-		[Theory]
-		[MemberData(nameof(TestData))]
-		[MemberData(nameof(TestNumbersData))]
-		[MemberData(nameof(TestVariousNumbersData))]
-		public void TestPropertiesDefaultValue(string[] data)
-		{
-			//Todo?
-			Assert.SkipWhen(data[0] == "decimal", "error CS1021: Integral constant is too large");
-			
-			//Todo?
-			Assert.SkipWhen(data[0] == "nint", "error CS0119: 'nint' is a type, which is not valid in the given context");
+		string strExpected = data.Expected == string.Empty ? data.CSValue : data.Expected;
+		Assert.Equal(strExpected, _ConsoleStr);
+	}
 
-			//Todo? Expected fail? see TestDefaultParameterInMethod
-			Assert.SkipWhen(data[0] == "nuint", " error CS0266: Cannot implicitly convert type 'ulong' to 'nuint'. An explicit conversion exists (are you missing a cast?)");
+	[Theory]
+	[MemberData(nameof(TestData_Data))]
+	[MemberData(nameof(TestData_Numbers))]
+	[MemberData(nameof(TestData_VariousNumbers))]
+	public void TestPropertiesDefaultValue(TestData data)
+	{
+		string methodName = nameof(TestPropertiesDefaultValue);
 
-			StringBuilder sb = _CSTOJS.GenerateOneFromString($@"
+		if (data.SkipMethods.TryGetValue(methodName, out string? reason))
+			Assert.SkipWhen(true, reason);
+
+		StringBuilder sb = _CSTOJS.GenerateOneFromString($@"
 using CSharpToJavaScript;
 using Microsoft.CodeAnalysis;
 
@@ -392,7 +475,7 @@ namespace CSTOJS_Test.CSharp
 {{
 	public class UnitTest
 	{{
-		public {data[0]} TestProperty {{get; set;}} = {data[1]};
+		public {data.CSType} TestProperty {{get; set;}} = {data.CSValue};
 		public UnitTest()
 		{{
 			Console.WriteLine(TestProperty);
@@ -406,28 +489,24 @@ namespace CSTOJS_Test.CSharp
 	}}
 }}", _DefaultUnitOpt);
 
-			_Engine.Execute(sb.ToString());
+		_Engine.Execute(sb.ToString());
 
-			string strExpected = data[2] == string.Empty ? data[1] : data[2];
-			Assert.Equal(strExpected, _ConsoleStr);
-		}
+		string strExpected = data.Expected == string.Empty ? data.CSValue : data.Expected;
+		Assert.Equal(strExpected, _ConsoleStr);
+	}
 
-		[Theory]
-		[MemberData(nameof(TestData))]
-		[MemberData(nameof(TestNumbersData))]
-		[MemberData(nameof(TestVariousNumbersData))]
-		public void TestLocalValue(string[] data)
-		{
-			//Todo?
-			Assert.SkipWhen(data[0] == "decimal", "error CS1021: Integral constant is too large");
-			
-			//Todo?
-			Assert.SkipWhen(data[0] == "nint", "error CS0119: 'nint' is a type, which is not valid in the given context");
-			
-			//Todo? Expected fail? see TestDefaultParameterInMethod
-			Assert.SkipWhen(data[0] == "nuint", " error CS0266: Cannot implicitly convert type 'ulong' to 'nuint'. An explicit conversion exists (are you missing a cast?)");
+	[Theory]
+	[MemberData(nameof(TestData_Data))]
+	[MemberData(nameof(TestData_Numbers))]
+	[MemberData(nameof(TestData_VariousNumbers))]
+	public void TestLocalValue(TestData data)
+	{
+		string methodName = nameof(TestLocalValue);
 
-			StringBuilder sb = _CSTOJS.GenerateOneFromString($@"
+		if (data.SkipMethods.TryGetValue(methodName, out string? reason))
+			Assert.SkipWhen(true, reason);
+
+		StringBuilder sb = _CSTOJS.GenerateOneFromString($@"
 using CSharpToJavaScript;
 using Microsoft.CodeAnalysis;
 
@@ -443,7 +522,7 @@ namespace CSTOJS_Test.CSharp
 	{{
 		public UnitTest()
 		{{
-			{data[0]} local = {data[1]};
+			{data.CSType} local = {data.CSValue};
 			Console.WriteLine(local);
 		}}
 	}}
@@ -455,27 +534,24 @@ namespace CSTOJS_Test.CSharp
 	}}
 }}", _DefaultUnitOpt);
 
-			_Engine.Execute(sb.ToString());
+		_Engine.Execute(sb.ToString());
 
-			string strExpected = data[2] == string.Empty ? data[1] : data[2];
-			Assert.Equal(strExpected, _ConsoleStr);
-		}
-		[Theory]
-		[MemberData(nameof(TestData))]
-		[MemberData(nameof(TestNumbersData))]
-		[MemberData(nameof(TestVariousNumbersData))]
-		public void TestPassValueToMethod(string[] data)
-		{
-			//Todo?
-			Assert.SkipWhen(data[0] == "decimal", "error CS1021: Integral constant is too large");
-			
-			//Todo?
-			Assert.SkipWhen(data[0] == "nint", "error CS0119: 'nint' is a type, which is not valid in the given context");
-			
-			//Todo? Expected fail? see TestDefaultParameterInMethod
-			Assert.SkipWhen(data[0] == "nuint", "error CS1503: Argument 1: cannot convert from 'ulong' to 'nuint'");
+		string strExpected = data.Expected == string.Empty ? data.CSValue : data.Expected;
+		Assert.Equal(strExpected, _ConsoleStr);
+	}
 
-			StringBuilder sb = _CSTOJS.GenerateOneFromString($@"
+	[Theory]
+	[MemberData(nameof(TestData_Data))]
+	[MemberData(nameof(TestData_Numbers))]
+	[MemberData(nameof(TestData_VariousNumbers))]
+	public void TestPassValueToMethod(TestData data)
+	{
+		string methodName = nameof(TestPassValueToMethod);
+
+		if (data.SkipMethods.TryGetValue(methodName, out string? reason))
+			Assert.SkipWhen(true, reason);
+
+		StringBuilder sb = _CSTOJS.GenerateOneFromString($@"
 using CSharpToJavaScript;
 using Microsoft.CodeAnalysis;
 
@@ -491,9 +567,9 @@ namespace CSTOJS_Test.CSharp
 	{{
 		public UnitTest()
 		{{
-			UnitMethod({data[1]});
+			UnitMethod({data.CSValue});
 		}}
-		public void UnitMethod({data[0]} value)
+		public void UnitMethod({data.CSType} value)
 		{{
 			Console.WriteLine(value);
 		}}
@@ -506,33 +582,24 @@ namespace CSTOJS_Test.CSharp
 	}}
 }}", _DefaultUnitOpt);
 
-			_Engine.Execute(sb.ToString());
+		_Engine.Execute(sb.ToString());
 
-			string strExpected = data[2] == string.Empty ? data[1] : data[2];
-			Assert.Equal(strExpected, _ConsoleStr);
-		}
-		[Theory]
-		[MemberData(nameof(TestData))]
-		[MemberData(nameof(TestNumbersData))]
-		[MemberData(nameof(TestVariousNumbersData))]
-		public void TestDefaultParameterInMethod(string[] data)
-		{
-			if (data[0] == "Boolean" ||
-				data[0] == "CustomClass" ||
-				data[0] == "object" ||
-				data[0] == "dynamic" ||
-				data[0] == "nint" ||
-				data[0] == "nuint")
-			{
-				Assert.True(true, "error CS1736: Default parameter value for 'value' must be a compile-time constant");
-				return;
-			}
+		string strExpected = data.Expected == string.Empty ? data.CSValue : data.Expected;
+		Assert.Equal(strExpected, _ConsoleStr);
+	}
 
-			//Todo?
-			Assert.SkipWhen(data[0] == "decimal", "error CS1021: Integral constant is too large");
+	[Theory]
+	[MemberData(nameof(TestData_Data))]
+	[MemberData(nameof(TestData_Numbers))]
+	[MemberData(nameof(TestData_VariousNumbers))]
+	public void TestDefaultParameterInMethod(TestData data)
+	{
+		string methodName = nameof(TestDefaultParameterInMethod);
 
+		if (data.SkipMethods.TryGetValue(methodName, out string? reason))
+			Assert.SkipWhen(true, reason);
 
-			StringBuilder sb = _CSTOJS.GenerateOneFromString($@"
+		StringBuilder sb = _CSTOJS.GenerateOneFromString($@"
 using CSharpToJavaScript;
 using Microsoft.CodeAnalysis;
 
@@ -550,7 +617,7 @@ namespace CSTOJS_Test.CSharp
 		{{
 			UnitMethod();
 		}}
-		public void UnitMethod({data[0]} value = {data[1]})
+		public void UnitMethod({data.CSType} value = {data.CSValue})
 		{{
 			Console.WriteLine(value);
 		}}
@@ -563,84 +630,84 @@ namespace CSTOJS_Test.CSharp
 	}}
 }}", _DefaultUnitOpt);
 
-			_Engine.Execute(sb.ToString());
+		_Engine.Execute(sb.ToString());
 
-			string strExpected = data[2] == string.Empty ? data[1] : data[2];
-			Assert.Equal(strExpected, _ConsoleStr);
-		}
+		string strExpected = data.Expected == string.Empty ? data.CSValue : data.Expected;
+		Assert.Equal(strExpected, _ConsoleStr);
+	}
 
 
 
-		//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Expressions_and_operators
-		[Theory]
-		//Assignment operators
-		//See method body.
-		[InlineData("a + 1", "6")]
-		[InlineData("(a += 3)", "8")]
-		[InlineData("(a -= 3)", "2")]
-		[InlineData("(a *= 3)", "15")]
-		[InlineData("(a /= 3)", "1.6666666666666667")]
-		[InlineData("(a %= 3)", "2")]
-		//c# does not have '**' ?
-		[InlineData("(a <<= 3)", "40")]
-		[InlineData("(a >>= 3)", "0")]
-		[InlineData("(a >>>= 3)", "0")]
-		[InlineData("(a &= 3)", "1")]
-		[InlineData("(a ^= 3)", "6")]
-		[InlineData("(a |= 3)", "7")]
-		//Does not exists in c#
-		//[InlineData("(a &&= 3)", "3")]
-		//[InlineData("(a ||= 3)", "5")]
-		[InlineData("(a ??= 3)", "5")]
+	//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Expressions_and_operators
+	[Theory]
+	//Assignment operators
+	//See method body.
+	[InlineData("a + 1", "6")]
+	[InlineData("(a += 3)", "8")]
+	[InlineData("(a -= 3)", "2")]
+	[InlineData("(a *= 3)", "15")]
+	[InlineData("(a /= 3)", "1.6666666666666667")]
+	[InlineData("(a %= 3)", "2")]
+	//c# does not have '**' ?
+	[InlineData("(a <<= 3)", "40")]
+	[InlineData("(a >>= 3)", "0")]
+	[InlineData("(a >>>= 3)", "0")]
+	[InlineData("(a &= 3)", "1")]
+	[InlineData("(a ^= 3)", "6")]
+	[InlineData("(a |= 3)", "7")]
+	//Does not exists in c#
+	//[InlineData("(a &&= 3)", "3")]
+	//[InlineData("(a ||= 3)", "5")]
+	[InlineData("(a ??= 3)", "5")]
 
-		//Comparison operators 
-		[InlineData("a == a","True")]
-		[InlineData("a != a", "False")]
-		//'===' and '!==' Done in "UnitTestOptions".
-		[InlineData("a > a", "False")]
-		[InlineData("a >= a", "True")]
-		[InlineData("a < a", "False")]
-		[InlineData("a <= a", "True")]
+	//Comparison operators 
+	[InlineData("a == a", "True")]
+	[InlineData("a != a", "False")]
+	//'===' and '!==' Done in "UnitTestOptions".
+	[InlineData("a > a", "False")]
+	[InlineData("a >= a", "True")]
+	[InlineData("a < a", "False")]
+	[InlineData("a <= a", "True")]
 
-		//Arithmetic operators
-		[InlineData("12 % a", "2")]
-		[InlineData("a++", "5")]
-		[InlineData("++a", "6")]
-		[InlineData("a--", "5")]
-		[InlineData("--a", "4")]
-		[InlineData("-a", "-5")]
-		[InlineData("+a", "5")]
-		//c# does not have '**' ?
+	//Arithmetic operators
+	[InlineData("12 % a", "2")]
+	[InlineData("a++", "5")]
+	[InlineData("++a", "6")]
+	[InlineData("a--", "5")]
+	[InlineData("--a", "4")]
+	[InlineData("-a", "-5")]
+	[InlineData("+a", "5")]
+	//c# does not have '**' ?
 
-		//Bitwise operators
-		[InlineData("a & b", "1")]
-		[InlineData("a | b", "7")]
-		[InlineData("a ^ b", "6")]
-		[InlineData("~a", "-6")]
-		[InlineData("a << b", "40")]
-		[InlineData("a >> b", "0")]
-		[InlineData("a >>> b", "0")]
+	//Bitwise operators
+	[InlineData("a & b", "1")]
+	[InlineData("a | b", "7")]
+	[InlineData("a ^ b", "6")]
+	[InlineData("~a", "-6")]
+	[InlineData("a << b", "40")]
+	[InlineData("a >> b", "0")]
+	[InlineData("a >>> b", "0")]
 
-		//Logical operators
-		[InlineData("a > 0 && b > 0", "True")]
-		[InlineData("a > 0 || b > 0", "True")]
-		[InlineData("null ?? \"default string\"", "default string")]
-		[InlineData("!(a > 0 || b > 0)", "False")]
+	//Logical operators
+	[InlineData("a > 0 && b > 0", "True")]
+	[InlineData("a > 0 || b > 0", "True")]
+	[InlineData("null ?? \"default string\"", "default string")]
+	[InlineData("!(a > 0 || b > 0)", "False")]
 
-		//String operators
-		[InlineData("\"my \" + \"string\"", "my string")]
+	//String operators
+	[InlineData("\"my \" + \"string\"", "my string")]
 
-		//Conditional (ternary) operator
-		[InlineData("a >= 18 ? \"adult\" : \"minor\"", "minor")]
+	//Conditional (ternary) operator
+	[InlineData("a >= 18 ? \"adult\" : \"minor\"", "minor")]
 
-		//Grouping operator
-		[InlineData("a + b * c", "11")]
-		[InlineData("a + (b * c)", "11")]
-		[InlineData("(a + b) * c", "16")]
-		[InlineData("a * c + b * c", "16")]
-		public void TestExpressionsAndOperators(string expression, string expectedResult)
-		{
-			StringBuilder sb = _CSTOJS.GenerateOneFromString($@"
+	//Grouping operator
+	[InlineData("a + b * c", "11")]
+	[InlineData("a + (b * c)", "11")]
+	[InlineData("(a + b) * c", "16")]
+	[InlineData("a * c + b * c", "16")]
+	public void TestExpressionsAndOperators(string expression, string expectedResult)
+	{
+		StringBuilder sb = _CSTOJS.GenerateOneFromString($@"
 using CSharpToJavaScript;
 using Microsoft.CodeAnalysis;
 
@@ -664,16 +731,16 @@ namespace CSTOJS_Test.CSharp
 	}}
 }}", _DefaultUnitOpt);
 
-			_Engine.Execute(sb.ToString());
+		_Engine.Execute(sb.ToString());
 
-			Assert.Equal(expectedResult, _ConsoleStr);
-		}
-
-
-		private void ConsoleOutPut(object? obj)
-		{
-			_ConsoleStr = obj?.ToString() ?? "null";
-		}
-
+		Assert.Equal(expectedResult, _ConsoleStr);
 	}
+
+
+	private void ConsoleOutPut(object? obj)
+	{
+		_ConsoleStr = obj?.ToString() ?? "null";
+	}
+
 }
+
