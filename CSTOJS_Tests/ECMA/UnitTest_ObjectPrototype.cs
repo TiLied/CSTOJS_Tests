@@ -1,16 +1,7 @@
 ﻿using CSharpToJavaScript;
-using CSharpToJavaScript.APIs.JS.Ecma;
 using Jint;
 using System;
 using System.Text;
-
-using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
-
-using Array = CSharpToJavaScript.APIs.JS.Ecma.Array;
-using Boolean = CSharpToJavaScript.APIs.JS.Ecma.Boolean;
-using Date = CSharpToJavaScript.APIs.JS.Ecma.Date;
-using Object = CSharpToJavaScript.APIs.JS.Ecma.Object;
-using String = CSharpToJavaScript.APIs.JS.Ecma.String;
 
 namespace CSTOJS_Tests.ECMA;
 public class UnitTest_ObjectPrototype
@@ -23,99 +14,96 @@ public class UnitTest_ObjectPrototype
 		AddSBAtTheTop = new("let console = { log: log };")
 	};
 
-	//0=cs expression
-	//1=js expected result
-	public static TheoryData<string[]> TestToStringData = new()
-		{
+	public static TheoryDataRow<TestData>[] TestData_ToString =
+		[
+			new(new(" new Array().ToString()", "")),
+			new(new(" GlobalThis.Array().ToString()", "")),
 
-			new string[] {" new Array().ToString()", "" },
-			new string[] {" GlobalThis.Array().ToString()", ""},
-
-			new string[] { "new ArrayBuffer(0).ToString()", "[object ArrayBuffer]" },
+			new(new( "new ArrayBuffer(0).ToString()", "[object ArrayBuffer]" )),
 			//Only with new:
 			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer/ArrayBuffer#syntax
 
-			new string[] { "GlobalThis.BigInt(0).ToString()", "0"},
+			new(new( "GlobalThis.BigInt(0).ToString()", "0")),
 
-			new string[] {"new Boolean(true).ToString()", "true"},
+			new(new("new Boolean(true).ToString()", "true")),
 			//Boolean without new returns bool/value
 			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean/Boolean#return_value
 
-			new string[] { "new DataView(new ArrayBuffer(0)).ToString()", "[object DataView]" },
+			new(new( "new DataView(new ArrayBuffer(0)).ToString()", "[object DataView]" )),
 			//Only with new:
 			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DataView/DataView#syntax
 
-			new string[] { "new Date(\"0\").ToString()", "Invalid Date"},
+			new(new( "new Date(\"0\").ToString()", "Invalid Date")),
 			//Date without new returns string
 			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/Date#return_value
 
-			new string[] { "new Error(\"\").ToString()", "Error"},
-			new string[] { "GlobalThis.Error(\"\").ToString()", "Error"},
+			new(new( "new Error(\"\").ToString()", "Error")),
+			new(new("GlobalThis.Error(\"\").ToString()", "Error")),
 
-			new string[] { "new FinalizationRegistry(() => { }).ToString()", "[object FinalizationRegistry]" },
+			new(new("new FinalizationRegistry(() => { }).ToString()", "[object FinalizationRegistry]" )),
 			//Only with new:
 			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/FinalizationRegistry/FinalizationRegistry#syntax
 
-			new string[] {" new Function(\"\",\"\").ToString()", "function anonymous() { [native code] }" },
-			new string[] {" GlobalThis.Function(\"\",\"\").ToString()", "function anonymous() { [native code] }" },
+			new(new( "new Function(\"\",\"\").ToString()", "function anonymous() { [native code] }" )),
+			new(new( "GlobalThis.Function(\"\",\"\").ToString()", "function anonymous() { [native code] }")),
 
-			new string[] {"new Map().ToString()", "[object Map]" },
+			new(new("new Map().ToString()", "[object Map]" )),
 			//Only with new:
 			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map/Map#syntax
 
 			//Math?
 
-			new string[] {"new Number(0).ToString()", "0"},
+			new(new("new Number(0).ToString()", "0")),
 			//Number without new returns value
 			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/Number#return_value
 
-			new string[] {"new Object().ToString()", "[object Object]"},
-			new string[] {"GlobalThis.Object().ToString()", "[object Object]"},
+			new(new("new Object().ToString()", "[object Object]")),
+			new(new("GlobalThis.Object().ToString()", "[object Object]")),
 
-			new string[] { "new Promise(() => { }).ToString()", "[object Promise]" },
+			new(new( "new Promise(() => { }).ToString()", "[object Promise]" )),
 			//Only with new:
 			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/Promise#syntax
 
-			new string[] { "new Proxy(new {}, new {}).ToString()", "[object Object]" },
+			new(new( "new Proxy(new {}, new {}).ToString()", "[object Object]" )),
 			//Only with new:
 			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/Proxy#syntax
 
-			new string[] {"new RegExp(\"\").ToString()", "/(?:)/"},
+			new(new("new RegExp(\"\").ToString()", "/(?:)/")),
 			//RegExp without new returns pattern
 			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/RegExp#return_value
 
-			new string[] {"new Set().ToString()", "[object Set]" },
+			new(new("new Set().ToString()", "[object Set]" )),
 			//Only with new:
 			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set/Set#syntax
 
-			new string[]{ "new SharedArrayBuffer(0).ToString()", "[object SharedArrayBuffer]" },
+			new(new("new SharedArrayBuffer(0).ToString()", "[object SharedArrayBuffer]" )),
 			//Only with new:
 			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer/SharedArrayBuffer#syntax
 
-			new string[] {"new String().ToString()", ""},
+			new(new("new String().ToString()", "")),
 			//String without new returns string/value
 			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/String#return_value
 
-			new string[] {"GlobalThis.Symbol().ToString()", "Symbol()" },
+			new(new("GlobalThis.Symbol().ToString()", "Symbol()" )),
 
 			//No need to test others. I think...
 			//Can be called only with new:
 			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Int8Array/Int8Array#syntax
-			new string[] { "new Int8Array().ToString()", "" },
+			new(new( "new Int8Array().ToString()", "" )),
 
-			new string[] { "new WeakMap().ToString()", "[object WeakMap]" },
+			new(new( "new WeakMap().ToString()", "[object WeakMap]" )),
 			//Only with new:
 			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap/WeakMap#syntax
 			
-			new string[] { "new WeakRef(new Object()).ToString()", "[object WeakRef]" },
+			new(new( "new WeakRef(new Object()).ToString()", "[object WeakRef]" )),
 			//Only with new:
 			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakRef/WeakRef#syntax
 
-			new string[] { "new WeakSet().ToString()", "[object WeakSet]" }
+			new(new( "new WeakSet().ToString()", "[object WeakSet]" ))
 			//Only with new:
 			//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakSet/WeakSet#syntax
 			
-	};
+		];
 	public UnitTest_ObjectPrototype()
 	{
 		_Engine.SetValue("log", new Action<object>(ConsoleOutPut));
@@ -124,8 +112,8 @@ public class UnitTest_ObjectPrototype
 	}
 
 	[Theory]
-	[MemberData(nameof(TestToStringData))]
-	public void Test_ToString(string[] data)
+	[MemberData(nameof(TestData_ToString))]
+	public void Test_ToString(TestData data)
 	{
 		StringBuilder sb = _CSTOJS.GenerateOneFromString($@"using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
 using CSharpToJavaScript.APIs.JS.Ecma;
@@ -134,11 +122,11 @@ using Boolean = CSharpToJavaScript.APIs.JS.Ecma.Boolean;
 using Date = CSharpToJavaScript.APIs.JS.Ecma.Date;
 using Object = CSharpToJavaScript.APIs.JS.Ecma.Object;
 using String = CSharpToJavaScript.APIs.JS.Ecma.String;
-Console.WriteLine({data[0]});", _DefaultUnitOpt);
+Console.WriteLine({data.CSValue});", _DefaultUnitOpt);
 
 		_Engine.Execute(sb.ToString());
 
-		Assert.Equal(data[1], _ConsoleStr);
+		Assert.Equal(data.Expected, _ConsoleStr);
 	}
 	/*
 	public void Test_HasOwnProperty()

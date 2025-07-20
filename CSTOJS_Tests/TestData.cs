@@ -7,7 +7,7 @@ public class TestData : IXunitSerializable
 {
 	//CS Type Name
 	public string CSType { get; set; } = string.Empty;
-	//CS Value
+	//CS Value/CS expression
 	public string CSValue { get; set; } = string.Empty;
 	//JS(Jint) Value (expected str)
 	public string Expected { get; set; } = string.Empty;
@@ -16,7 +16,11 @@ public class TestData : IXunitSerializable
 	public Dictionary<string, string> SkipMethods { get; set; } = new();
 
 	public TestData() { }
-
+	public TestData(string csExpression, string expected)
+	{
+		CSValue = csExpression;
+		Expected = expected;
+	}
 	public TestData(string csType, string csValue, string expected) 
 	{
 		CSType = csType;
@@ -43,8 +47,11 @@ public class TestData : IXunitSerializable
 	}
 	
 	// You can customize how the class is displayed in parameters by overriding ToString
-	//public override string ToString()
-	//{
-		//return $"{CSType} {CSValue} {Expected}";
-	//}
+	public override string ToString()
+	{
+		if(CSType != string.Empty)
+			return $"\"{CSType}\"|\"{CSValue}\"|\"{Expected}\"";
+		else
+			return $"\"{CSValue}\"|\"{Expected}\"";
+	}
 }
