@@ -126,7 +126,11 @@ return 0;
 		{
 			CSTOJSOptions options = new()
 			{
-				CustomCSNamesToJS = [ new("Console", "console"), new("Beep", "log") ]
+				CustomCSNamesToJS = new() 
+				{ 
+					["Console"] = "console",
+					["Beep"] = "log"
+				} 
 			};
 
 			StringBuilder sb = _CSTOJS.GenerateOneFromString(@"Console.Beep();", options);
