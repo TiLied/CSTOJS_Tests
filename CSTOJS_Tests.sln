@@ -5,7 +5,7 @@ VisualStudioVersion = 17.13.35828.75 d17.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSTOJS_Tests", "CSTOJS_Tests\CSTOJS_Tests.csproj", "{07F9C6C2-BC28-4C8C-AD1C-691986F9BC6E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSharpToJavaScript", "..\CSharpToJavaScript\CSharpToJavaScript\CSharpToJavaScript.csproj", "{C63D6417-669F-B2A9-C5DB-484825F2E0F7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSharpToJavaScript", "..\CSharpToJavaScript\CSharpToJavaScript.csproj", "{C63D6417-669F-B2A9-C5DB-484825F2E0F7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

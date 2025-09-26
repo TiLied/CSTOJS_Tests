@@ -1,6 +1,7 @@
 ﻿using CSharpToJavaScript;
 using Jint;
 using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace CSTOJS_Tests.ECMA;
@@ -8,7 +9,6 @@ public class UnitTest_ObjectPrototype
 {
 	private readonly Engine _Engine = new();
 	private string _ConsoleStr = string.Empty;
-	private readonly CSTOJS _CSTOJS = new();
 	private readonly CSTOJSOptions _DefaultUnitOpt = new()
 	{
 		AddSBAtTheTop = new("let console = { log: log };")
@@ -107,25 +107,27 @@ public class UnitTest_ObjectPrototype
 	public UnitTest_ObjectPrototype()
 	{
 		_Engine.SetValue("log", new Action<object>(ConsoleOutPut));
-
-		_CSTOJS = new CSTOJS();
 	}
 
 	[Theory]
 	[MemberData(nameof(TestData_ToString))]
 	public void Test_ToString(TestData data)
 	{
-		StringBuilder sb = _CSTOJS.GenerateOneFromString($@"using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
+		FileData file = new()
+		{
+			OptionsForFile = _DefaultUnitOpt,
+			SourceStr = $@"using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
 using CSharpToJavaScript.APIs.JS.Ecma;
 using Array = CSharpToJavaScript.APIs.JS.Ecma.Array;
 using Boolean = CSharpToJavaScript.APIs.JS.Ecma.Boolean;
 using Date = CSharpToJavaScript.APIs.JS.Ecma.Date;
 using Object = CSharpToJavaScript.APIs.JS.Ecma.Object;
 using String = CSharpToJavaScript.APIs.JS.Ecma.String;
-Console.WriteLine({data.CSValue});", _DefaultUnitOpt);
+Console.WriteLine({data.CSValue});"
+		};
+		FileData[] files = CSTOJS.Translate([ file ]);
 
-		_Engine.Execute(sb.ToString());
-
+		_Engine.Execute(files[0].TranslatedStr);
 		Assert.Equal(data.Expected, _ConsoleStr);
 	}
 	/*

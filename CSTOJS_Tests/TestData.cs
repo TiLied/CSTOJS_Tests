@@ -5,14 +5,24 @@ namespace CSTOJS_Tests;
 
 public class TestData : IXunitSerializable
 {
-	//CS Type Name
+	/// <summary>
+	/// CS Type Name
+	/// </summary>
 	public string CSType { get; set; } = string.Empty;
-	//CS Value/CS expression
+	
+	/// <summary>
+	/// CS Value/CS expression
+	/// </summary>
 	public string CSValue { get; set; } = string.Empty;
-	//JS(Jint) Value (expected str)
+
+	/// <summary>
+	/// JS(Jint) Value (expected str)
+	/// </summary>
 	public string Expected { get; set; } = string.Empty;
 
-	//method, reason
+	/// <summary>
+	/// method, reason
+	/// </summary>
 	public Dictionary<string, string> SkipMethods { get; set; } = new();
 
 	public TestData() { }

@@ -3,10 +3,9 @@ using CSharpToJavaScript;
 using CSharpToJavaScript.APIs.JS.Ecma;
 using Jint;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
 
 namespace CSTOJS_Tests;
@@ -16,8 +15,6 @@ public class UnitTest
 	private readonly Engine _Engine = new(cfg => cfg.Culture(CultureInfo.InvariantCulture));
 
 	private string _ConsoleStr = string.Empty;
-
-	private CSTOJS _CSTOJS = new();
 
 	private readonly CSTOJSOptions _DefaultUnitOpt = new()
 	{
@@ -190,14 +187,15 @@ public class UnitTest
 		Thread.CurrentThread.CurrentUICulture = Thread.CurrentThread.CurrentCulture;
 
 		_Engine.SetValue("log", new Action<object>(ConsoleOutPut));
-
-		_CSTOJS = new CSTOJS();
 	}
 
 	[Fact]
 	public void Fibonacci()
 	{
-		StringBuilder sb = _CSTOJS.GenerateOneFromString(@"
+		FileData file = new()
+		{
+			OptionsForFile = _DefaultUnitOpt,
+			SourceStr = @"
 using CSharpToJavaScript;
 using Microsoft.CodeAnalysis;
 
@@ -230,16 +228,22 @@ namespace CSTOJS_Test.CSharp
 			Console.WriteLine($""{n3}"");
 		}
 	}
-}", _DefaultUnitOpt);
+}"
+		};
+		
+		FileData[] files = CSTOJS.Translate([ file ]);
 
-		_Engine.Execute(sb.ToString());
+		_Engine.Execute(files[0].TranslatedStr);
 		Assert.Equal("377", _ConsoleStr);
 	}
 
 	[Fact]
 	public void HelloWorld()
 	{
-		StringBuilder sb = _CSTOJS.GenerateOneFromString(@"
+		FileData file = new()
+		{
+			OptionsForFile = _DefaultUnitOpt,
+			SourceStr = @"
 using CSharpToJavaScript;
 using Microsoft.CodeAnalysis;
 
@@ -260,16 +264,21 @@ namespace CSTOJS_Test.CSharp
 			Console.WriteLine(""HelloWorld!"");
 		}
 	}
-}", _DefaultUnitOpt);
+}"
+		};
+		FileData[] files = CSTOJS.Translate([ file ]);
 
-		_Engine.Execute(sb.ToString());
+		_Engine.Execute(files[0].TranslatedStr);
 		Assert.Equal("HelloWorld!", _ConsoleStr);
 	}
 
 	[Fact]
 	public void HelloWorldField()
 	{
-		StringBuilder sb = _CSTOJS.GenerateOneFromString(@"
+		FileData file = new()
+		{
+			OptionsForFile = _DefaultUnitOpt,
+			SourceStr = @"
 using CSharpToJavaScript;
 using Microsoft.CodeAnalysis;
 
@@ -289,16 +298,21 @@ namespace CSTOJS_Test.CSharp
 			Console.WriteLine(_HW);
 		}
 	}
-}", _DefaultUnitOpt);
+}"
+		};
+		FileData[] files = CSTOJS.Translate([ file ]);
 
-		_Engine.Execute(sb.ToString());
+		_Engine.Execute(files[0].TranslatedStr);
 		Assert.Equal("HelloWorldField!", _ConsoleStr);
 	}
 
 	[Fact]
 	public void GlobalThisDate()
 	{
-		StringBuilder sb = _CSTOJS.GenerateOneFromString(@"
+		FileData file = new()
+		{
+			OptionsForFile = _DefaultUnitOpt,
+			SourceStr = @"
 using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
 using CSharpToJavaScript;
 using Microsoft.CodeAnalysis;
@@ -319,9 +333,11 @@ namespace CSTOJS_Test.CSharp
 			Console.WriteLine(""GlobalThisDate"");
 		}
 	}
-}", _DefaultUnitOpt);
+}"
+		};
+		FileData[] files = CSTOJS.Translate([ file ]);
 
-		_Engine.Execute(sb.ToString());
+		_Engine.Execute(files[0].TranslatedStr);
 		Assert.Equal("GlobalThisDate", _ConsoleStr);
 	}
 
@@ -337,9 +353,13 @@ namespace CSTOJS_Test.CSharp
 		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "TODO!");
 		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "TODO!");
 
-		List<StringBuilder> lSB = _CSTOJS.GenerateOne("..\\..\\..\\CSharp\\AnkiWebQuiz.cs");
+		FileData file = new()
+		{
+			SourceStr = File.ReadAllText("..\\..\\..\\CSharp\\AnkiWebQuiz.cs")
+		};
+		FileData[] files = CSTOJS.Translate([ file ]);
 
-		_Engine.Execute(lSB[0].ToString());
+		_Engine.Execute(files[0].TranslatedStr);
 		Assert.Equal("", _ConsoleStr);
 	}
 	[Fact]
@@ -348,9 +368,13 @@ namespace CSTOJS_Test.CSharp
 		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "TODO!");
 		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "TODO!");
 
-		List<StringBuilder> lSB = _CSTOJS.GenerateOne("..\\..\\..\\CSharp\\test4.cs");
+		FileData file = new()
+		{
+			SourceStr = File.ReadAllText("..\\..\\..\\CSharp\\test4.cs")
+		};
+		FileData[] files = CSTOJS.Translate([ file ]);
 
-		_Engine.Execute(lSB[0].ToString());
+		_Engine.Execute(files[0].TranslatedStr);
 		Assert.Equal("", _ConsoleStr);
 	}
 	[Fact]
@@ -359,9 +383,13 @@ namespace CSTOJS_Test.CSharp
 		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "TODO!");
 		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "TODO!");
 
-		List<StringBuilder> lSB = _CSTOJS.GenerateOne("..\\..\\..\\CSharp\\test6.cs");
+		FileData file = new()
+		{
+			SourceStr = File.ReadAllText("..\\..\\..\\CSharp\\test6.cs")
+		};
+		FileData[] files = CSTOJS.Translate([ file ]);
 
-		_Engine.Execute(lSB[0].ToString());
+		_Engine.Execute(files[0].TranslatedStr);
 		Assert.Equal("", _ConsoleStr);
 	}
 
@@ -371,9 +399,13 @@ namespace CSTOJS_Test.CSharp
 		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "TODO!");
 		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "TODO!");
 
-		List<StringBuilder> lSB = _CSTOJS.GenerateOne("..\\..\\..\\CSharp\\NBody.cs");
+		FileData file = new()
+		{
+			SourceStr = File.ReadAllText("..\\..\\..\\CSharp\\NBody.cs")
+		};
+		FileData[] files = CSTOJS.Translate([ file ]);
 
-		_Engine.Execute(lSB[0].ToString());
+		_Engine.Execute(files[0].TranslatedStr);
 		Assert.Equal("", _ConsoleStr);
 	}
 
@@ -383,9 +415,14 @@ namespace CSTOJS_Test.CSharp
 		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "TODO!");
 		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "TODO!");
 
-		List<StringBuilder> lSB = _CSTOJS.GenerateOne("..\\..\\..\\CSharp\\Test7.cs", _DefaultUnitOpt);
+		FileData file = new()
+		{
+			OptionsForFile = _DefaultUnitOpt,
+			SourceStr = File.ReadAllText("..\\..\\..\\CSharp\\Test7.cs")
+		};
+		FileData[] files = CSTOJS.Translate([ file ]);
 
-		_Engine.Execute(lSB[0].ToString());
+		_Engine.Execute(files[0].TranslatedStr);
 		Assert.Equal("", _ConsoleStr);
 	}
 
@@ -395,10 +432,14 @@ namespace CSTOJS_Test.CSharp
 		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "TODO!");
 		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "TODO!");
 
-		List<StringBuilder> lSB = _CSTOJS.GenerateOne("..\\..\\..\\CSharp\\Test8.cs", _DefaultUnitOpt);
+		FileData file = new()
+		{
+			OptionsForFile = _DefaultUnitOpt,
+			SourceStr = File.ReadAllText("..\\..\\..\\CSharp\\Test8.cs")
+		};
+		FileData[] files = CSTOJS.Translate([ file ]);
 
-
-		_Engine.Execute(lSB[0].ToString());
+		_Engine.Execute(files[0].TranslatedStr);
 		Assert.Equal("Done!", _ConsoleStr);
 	}
 	//
@@ -416,7 +457,10 @@ namespace CSTOJS_Test.CSharp
 		if (data.SkipMethods.TryGetValue(methodName, out string? reason))
 			Assert.SkipWhen(true, reason);
 
-		StringBuilder sb = _CSTOJS.GenerateOneFromString($@"
+		FileData file = new()
+		{
+			OptionsForFile = _DefaultUnitOpt,
+			SourceStr = $@"
 using CSharpToJavaScript;
 using Microsoft.CodeAnalysis;
 
@@ -442,9 +486,11 @@ namespace CSTOJS_Test.CSharp
 		{{
 		}}
 	}}
-}}", _DefaultUnitOpt);
+}}"
+		};
+		FileData[] files = CSTOJS.Translate([ file ]);
 
-		_Engine.Execute(sb.ToString());
+		_Engine.Execute(files[0].TranslatedStr);
 
 		string strExpected = data.Expected == string.Empty ? data.CSValue : data.Expected;
 		Assert.Equal(strExpected, _ConsoleStr);
@@ -461,7 +507,10 @@ namespace CSTOJS_Test.CSharp
 		if (data.SkipMethods.TryGetValue(methodName, out string? reason))
 			Assert.SkipWhen(true, reason);
 
-		StringBuilder sb = _CSTOJS.GenerateOneFromString($@"
+		FileData file = new()
+		{
+			OptionsForFile = _DefaultUnitOpt,
+			SourceStr = $@"
 using CSharpToJavaScript;
 using Microsoft.CodeAnalysis;
 
@@ -487,9 +536,11 @@ namespace CSTOJS_Test.CSharp
 		{{
 		}}
 	}}
-}}", _DefaultUnitOpt);
+}}"
+		};
+		FileData[] files = CSTOJS.Translate([ file ]);
 
-		_Engine.Execute(sb.ToString());
+		_Engine.Execute(files[0].TranslatedStr);
 
 		string strExpected = data.Expected == string.Empty ? data.CSValue : data.Expected;
 		Assert.Equal(strExpected, _ConsoleStr);
@@ -506,7 +557,11 @@ namespace CSTOJS_Test.CSharp
 		if (data.SkipMethods.TryGetValue(methodName, out string? reason))
 			Assert.SkipWhen(true, reason);
 
-		StringBuilder sb = _CSTOJS.GenerateOneFromString($@"
+
+		FileData file = new()
+		{
+			OptionsForFile = _DefaultUnitOpt,
+			SourceStr = $@"
 using CSharpToJavaScript;
 using Microsoft.CodeAnalysis;
 
@@ -532,10 +587,12 @@ namespace CSTOJS_Test.CSharp
 		{{
 		}}
 	}}
-}}", _DefaultUnitOpt);
+}}"
+		};
+		FileData[] files = CSTOJS.Translate([ file ]);
 
-		_Engine.Execute(sb.ToString());
-
+		_Engine.Execute(files[0].TranslatedStr);
+	
 		string strExpected = data.Expected == string.Empty ? data.CSValue : data.Expected;
 		Assert.Equal(strExpected, _ConsoleStr);
 	}
@@ -551,7 +608,10 @@ namespace CSTOJS_Test.CSharp
 		if (data.SkipMethods.TryGetValue(methodName, out string? reason))
 			Assert.SkipWhen(true, reason);
 
-		StringBuilder sb = _CSTOJS.GenerateOneFromString($@"
+		FileData file = new()
+		{
+			OptionsForFile = _DefaultUnitOpt,
+			SourceStr = $@"
 using CSharpToJavaScript;
 using Microsoft.CodeAnalysis;
 
@@ -580,9 +640,11 @@ namespace CSTOJS_Test.CSharp
 		{{
 		}}
 	}}
-}}", _DefaultUnitOpt);
+}}"
+		};
+		FileData[] files = CSTOJS.Translate([ file ]);
 
-		_Engine.Execute(sb.ToString());
+		_Engine.Execute(files[0].TranslatedStr);
 
 		string strExpected = data.Expected == string.Empty ? data.CSValue : data.Expected;
 		Assert.Equal(strExpected, _ConsoleStr);
@@ -599,7 +661,10 @@ namespace CSTOJS_Test.CSharp
 		if (data.SkipMethods.TryGetValue(methodName, out string? reason))
 			Assert.SkipWhen(true, reason);
 
-		StringBuilder sb = _CSTOJS.GenerateOneFromString($@"
+		FileData file = new()
+		{
+			OptionsForFile = _DefaultUnitOpt,
+			SourceStr = $@"
 using CSharpToJavaScript;
 using Microsoft.CodeAnalysis;
 
@@ -628,9 +693,11 @@ namespace CSTOJS_Test.CSharp
 		{{
 		}}
 	}}
-}}", _DefaultUnitOpt);
+}}"
+		};
+		FileData[] files = CSTOJS.Translate([ file ]);
 
-		_Engine.Execute(sb.ToString());
+		_Engine.Execute(files[0].TranslatedStr);
 
 		string strExpected = data.Expected == string.Empty ? data.CSValue : data.Expected;
 		Assert.Equal(strExpected, _ConsoleStr);
@@ -707,7 +774,10 @@ namespace CSTOJS_Test.CSharp
 	[InlineData("a * c + b * c", "16")]
 	public void TestExpressionsAndOperators(string expression, string expectedResult)
 	{
-		StringBuilder sb = _CSTOJS.GenerateOneFromString($@"
+		FileData file = new()
+		{
+			OptionsForFile = _DefaultUnitOpt,
+			SourceStr = $@"
 using CSharpToJavaScript;
 using Microsoft.CodeAnalysis;
 
@@ -729,10 +799,11 @@ namespace CSTOJS_Test.CSharp
 			Console.WriteLine({expression});
 		}}
 	}}
-}}", _DefaultUnitOpt);
+}}"
+		};
+		FileData[] files = CSTOJS.Translate([ file ]);
 
-		_Engine.Execute(sb.ToString());
-
+		_Engine.Execute(files[0].TranslatedStr);
 		Assert.Equal(expectedResult, _ConsoleStr);
 	}
 

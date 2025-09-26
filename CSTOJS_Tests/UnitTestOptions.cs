@@ -1,5 +1,6 @@
 ﻿using CSharpToJavaScript;
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -9,26 +10,23 @@ namespace CSTOJS_Tests
 
 	public class UnitTestOptions
     {
-		private readonly CSTOJS _CSTOJS = new();
-
-		public UnitTestOptions()
-		{
-			_CSTOJS = new CSTOJS();
-		}
-
 		[Theory]
 		[InlineData("true", "var i = 5;")]
 		[InlineData("false", "let i = 5;")]
 		public void TestUseVarOverLet(string value, string expected) 
 		{
-			CSTOJSOptions options = new()
+			FileData file = new()
 			{
-				UseVarOverLet = bool.Parse(value)
+				OptionsForFile = new()
+				{
+					UseVarOverLet = bool.Parse(value)
+				},
+				SourceStr = @"int i = 5;"
 			};
+			
+			FileData[] files = CSTOJS.Translate([ file ]);
 
-			StringBuilder sb = _CSTOJS.GenerateOneFromString(@"int i = 5;", options);
-
-			Assert.Equal(expected, sb.ToString());
+			Assert.Equal(expected, files[0].TranslatedStr);
 		}
 
 		[Theory]
@@ -41,17 +39,21 @@ namespace CSTOJS_Tests
 }")]
 		public void TestKeepBraceOnTheSameLine(string value, string expected)
 		{
-			CSTOJSOptions options = new()
+			FileData file = new()
 			{
-				KeepBraceOnTheSameLine = bool.Parse(value)
-			};
-
-			StringBuilder sb = _CSTOJS.GenerateOneFromString(@"int TestMethod()
+				OptionsForFile = new()
+				{
+					KeepBraceOnTheSameLine = bool.Parse(value)
+				},
+				SourceStr = @"int TestMethod()
 {
 	return 0;
-}", options);
+}"
+			};
 
-			Assert.Equal(expected, sb.ToString());
+			FileData[] files = CSTOJS.Translate([ file ]);
+
+			Assert.Equal(expected, files[0].TranslatedStr);
 		}
 		[Theory]
 		[InlineData("true", @"function TestMethod()
@@ -70,18 +72,22 @@ return 0;
 				Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "TODO!");
 				Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "TODO!");
 			}
-			CSTOJSOptions options = new()
+			FileData file = new()
 			{
-				NormalizeWhitespace = bool.Parse(value)
-			};
-
-			StringBuilder sb = _CSTOJS.GenerateOneFromString(@"int TestMethod()
+				OptionsForFile = new()
+				{
+					NormalizeWhitespace = bool.Parse(value)
+				},
+				SourceStr = @"int TestMethod()
 {
 return 0;
 
-}", options);
+}"
+			};
 
-			Assert.Equal(expected, sb.ToString());
+			FileData[] files = CSTOJS.Translate([ file ]);
+
+			Assert.Equal(expected, files[0].TranslatedStr);
 		}
 
 		[Theory]
@@ -103,39 +109,47 @@ return 0;
 }")]
 		public void TestUseStrictEquality(string value, string expected)
 		{
-			CSTOJSOptions options = new()
+			FileData file = new()
 			{
-				UseStrictEquality = bool.Parse(value)
-			};
-
-			StringBuilder sb = _CSTOJS.GenerateOneFromString(@"int TestMethod()
+				OptionsForFile = new()
+				{
+					UseStrictEquality = bool.Parse(value)
+				},
+				SourceStr = @"int TestMethod()
 {
 	if(5 == 10)
 	{
 			
 	}
 	return 0;
-}", options);
+}"
+			};
 
-			Assert.Equal(expected, sb.ToString());
+			FileData[] files = CSTOJS.Translate([ file ]);
+
+			Assert.Equal(expected, files[0].TranslatedStr);
 		}
 
 		
 		[Fact]
 		public void TestCustomCSNamesToJS()
 		{
-			CSTOJSOptions options = new()
+			FileData file = new()
 			{
-				CustomCSNamesToJS = new() 
-				{ 
-					["Console"] = "console",
-					["Beep"] = "log"
-				} 
+				OptionsForFile = new()
+				{
+					CustomCSNamesToJS = new()
+					{
+						["Console"] = "console",
+						["Beep"] = "log"
+					}
+				},
+				SourceStr = @"Console.Beep();"
 			};
 
-			StringBuilder sb = _CSTOJS.GenerateOneFromString(@"Console.Beep();", options);
+			FileData[] files = CSTOJS.Translate([ file ]);
 
-			Assert.Equal("console.log();", sb.ToString());
+			Assert.Equal("console.log();", files[0].TranslatedStr);
 		}
 	}
 }
