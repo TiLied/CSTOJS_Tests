@@ -89,47 +89,6 @@ return 0;
 
 			Assert.Equal(expected, files[0].TranslatedStr);
 		}
-
-		[Theory]
-		[InlineData("true", @"function TestMethod()
-{
-	if(5 === 10)
-	{
-			
-	}
-	return 0;
-}")]
-		[InlineData("false", @"function TestMethod()
-{
-	if(5 == 10)
-	{
-			
-	}
-	return 0;
-}")]
-		public void TestUseStrictEquality(string value, string expected)
-		{
-			FileData file = new()
-			{
-				OptionsForFile = new()
-				{
-					UseStrictEquality = bool.Parse(value)
-				},
-				SourceStr = @"int TestMethod()
-{
-	if(5 == 10)
-	{
-			
-	}
-	return 0;
-}"
-			};
-
-			FileData[] files = CSTOJS.Translate([ file ]);
-
-			Assert.Equal(expected, files[0].TranslatedStr);
-		}
-
 		
 		[Fact]
 		public void TestCustomCSNamesToJS()

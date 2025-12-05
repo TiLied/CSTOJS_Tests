@@ -10,6 +10,7 @@ using System.Threading;
 
 namespace CSTOJS_Tests;
 
+//dotnet test --filter "Category!=test262&Category!=test262-parser"
 public class UnitTest
 {
 	private readonly Engine _Engine = new(cfg => cfg.Culture(CultureInfo.InvariantCulture));
@@ -230,8 +231,8 @@ namespace CSTOJS_Test.CSharp
 	}
 }"
 		};
-		
-		FileData[] files = CSTOJS.Translate([ file ]);
+
+		FileData[] files = CSTOJS.Translate([file]);
 
 		_Engine.Execute(files[0].TranslatedStr);
 		Assert.Equal("377", _ConsoleStr);
@@ -266,7 +267,7 @@ namespace CSTOJS_Test.CSharp
 	}
 }"
 		};
-		FileData[] files = CSTOJS.Translate([ file ]);
+		FileData[] files = CSTOJS.Translate([file]);
 
 		_Engine.Execute(files[0].TranslatedStr);
 		Assert.Equal("HelloWorld!", _ConsoleStr);
@@ -300,7 +301,7 @@ namespace CSTOJS_Test.CSharp
 	}
 }"
 		};
-		FileData[] files = CSTOJS.Translate([ file ]);
+		FileData[] files = CSTOJS.Translate([file]);
 
 		_Engine.Execute(files[0].TranslatedStr);
 		Assert.Equal("HelloWorldField!", _ConsoleStr);
@@ -335,7 +336,7 @@ namespace CSTOJS_Test.CSharp
 	}
 }"
 		};
-		FileData[] files = CSTOJS.Translate([ file ]);
+		FileData[] files = CSTOJS.Translate([file]);
 
 		_Engine.Execute(files[0].TranslatedStr);
 		Assert.Equal("GlobalThisDate", _ConsoleStr);
@@ -357,7 +358,7 @@ namespace CSTOJS_Test.CSharp
 		{
 			SourceStr = File.ReadAllText("..\\..\\..\\CSharp\\AnkiWebQuiz.cs")
 		};
-		FileData[] files = CSTOJS.Translate([ file ]);
+		FileData[] files = CSTOJS.Translate([file]);
 
 		_Engine.Execute(files[0].TranslatedStr);
 		Assert.Equal("", _ConsoleStr);
@@ -372,7 +373,7 @@ namespace CSTOJS_Test.CSharp
 		{
 			SourceStr = File.ReadAllText("..\\..\\..\\CSharp\\test4.cs")
 		};
-		FileData[] files = CSTOJS.Translate([ file ]);
+		FileData[] files = CSTOJS.Translate([file]);
 
 		_Engine.Execute(files[0].TranslatedStr);
 		Assert.Equal("", _ConsoleStr);
@@ -387,7 +388,7 @@ namespace CSTOJS_Test.CSharp
 		{
 			SourceStr = File.ReadAllText("..\\..\\..\\CSharp\\test6.cs")
 		};
-		FileData[] files = CSTOJS.Translate([ file ]);
+		FileData[] files = CSTOJS.Translate([file]);
 
 		_Engine.Execute(files[0].TranslatedStr);
 		Assert.Equal("", _ConsoleStr);
@@ -403,7 +404,7 @@ namespace CSTOJS_Test.CSharp
 		{
 			SourceStr = File.ReadAllText("..\\..\\..\\CSharp\\NBody.cs")
 		};
-		FileData[] files = CSTOJS.Translate([ file ]);
+		FileData[] files = CSTOJS.Translate([file]);
 
 		_Engine.Execute(files[0].TranslatedStr);
 		Assert.Equal("", _ConsoleStr);
@@ -420,7 +421,7 @@ namespace CSTOJS_Test.CSharp
 			OptionsForFile = _DefaultUnitOpt,
 			SourceStr = File.ReadAllText("..\\..\\..\\CSharp\\Test7.cs")
 		};
-		FileData[] files = CSTOJS.Translate([ file ]);
+		FileData[] files = CSTOJS.Translate([file]);
 
 		_Engine.Execute(files[0].TranslatedStr);
 		Assert.Equal("", _ConsoleStr);
@@ -437,7 +438,7 @@ namespace CSTOJS_Test.CSharp
 			OptionsForFile = _DefaultUnitOpt,
 			SourceStr = File.ReadAllText("..\\..\\..\\CSharp\\Test8.cs")
 		};
-		FileData[] files = CSTOJS.Translate([ file ]);
+		FileData[] files = CSTOJS.Translate([file]);
 
 		_Engine.Execute(files[0].TranslatedStr);
 		Assert.Equal("Done!", _ConsoleStr);
@@ -488,7 +489,7 @@ namespace CSTOJS_Test.CSharp
 	}}
 }}"
 		};
-		FileData[] files = CSTOJS.Translate([ file ]);
+		FileData[] files = CSTOJS.Translate([file]);
 
 		_Engine.Execute(files[0].TranslatedStr);
 
@@ -538,7 +539,7 @@ namespace CSTOJS_Test.CSharp
 	}}
 }}"
 		};
-		FileData[] files = CSTOJS.Translate([ file ]);
+		FileData[] files = CSTOJS.Translate([file]);
 
 		_Engine.Execute(files[0].TranslatedStr);
 
@@ -589,10 +590,10 @@ namespace CSTOJS_Test.CSharp
 	}}
 }}"
 		};
-		FileData[] files = CSTOJS.Translate([ file ]);
+		FileData[] files = CSTOJS.Translate([file]);
 
 		_Engine.Execute(files[0].TranslatedStr);
-	
+
 		string strExpected = data.Expected == string.Empty ? data.CSValue : data.Expected;
 		Assert.Equal(strExpected, _ConsoleStr);
 	}
@@ -642,7 +643,7 @@ namespace CSTOJS_Test.CSharp
 	}}
 }}"
 		};
-		FileData[] files = CSTOJS.Translate([ file ]);
+		FileData[] files = CSTOJS.Translate([file]);
 
 		_Engine.Execute(files[0].TranslatedStr);
 
@@ -695,7 +696,7 @@ namespace CSTOJS_Test.CSharp
 	}}
 }}"
 		};
-		FileData[] files = CSTOJS.Translate([ file ]);
+		FileData[] files = CSTOJS.Translate([file]);
 
 		_Engine.Execute(files[0].TranslatedStr);
 
@@ -801,13 +802,38 @@ namespace CSTOJS_Test.CSharp
 	}}
 }}"
 		};
-		FileData[] files = CSTOJS.Translate([ file ]);
+		FileData[] files = CSTOJS.Translate([file]);
 
 		_Engine.Execute(files[0].TranslatedStr);
 		Assert.Equal(expectedResult, _ConsoleStr);
 	}
+	
+	[Fact(Skip = "TODO! GenericName")]
+	public void TestGenericName()
+	{
+		FileData file = new()
+		{
+			SourceStr = $@"using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
+using CSharpToJavaScript.APIs.JS;
+HTMLElement e = (GlobalThis.Window.Document as ParentNode).QuerySelector<HTMLElement>(""test"");"
+		};
+		file = CSTOJS.Translate(file);
 
+		Assert.Equal(@"let e = globalThis.window.document.querySelector(""test"");", file.TranslatedStr);
+	}
+	[Fact]
+	public void TestIdentifierName()
+	{
+		FileData file = new()
+		{
+			SourceStr = $@"using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
+using CSharpToJavaScript.APIs.JS;
+Element e = (GlobalThis.Window.Document as ParentNode).QuerySelector(""test"");"
+		};
+		file = CSTOJS.Translate(file);
 
+		Assert.Equal(@"let e = globalThis.window.document.querySelector(""test"");", file.TranslatedStr);
+	}
 	private void ConsoleOutPut(object? obj)
 	{
 		_ConsoleStr = obj?.ToString() ?? "null";
