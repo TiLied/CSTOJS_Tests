@@ -808,7 +808,7 @@ namespace CSTOJS_Test.CSharp
 		Assert.Equal(expectedResult, _ConsoleStr);
 	}
 	
-	[Fact(Skip = "TODO! GenericName")]
+	[Fact]
 	public void TestGenericName()
 	{
 		FileData file = new()
