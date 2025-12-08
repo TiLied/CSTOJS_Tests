@@ -1,8 +1,6 @@
 ﻿using CSharpToJavaScript;
 using Jint;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace CSTOJS_Tests.ECMA;
 public class UnitTest_ObjectPrototype

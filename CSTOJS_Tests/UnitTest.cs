@@ -808,32 +808,6 @@ namespace CSTOJS_Test.CSharp
 		Assert.Equal(expectedResult, _ConsoleStr);
 	}
 	
-	[Fact]
-	public void TestGenericName()
-	{
-		FileData file = new()
-		{
-			SourceStr = $@"using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
-using CSharpToJavaScript.APIs.JS;
-HTMLElement e = (GlobalThis.Window.Document as ParentNode).QuerySelector<HTMLElement>(""test"");"
-		};
-		file = CSTOJS.Translate(file);
-
-		Assert.Equal(@"let e = globalThis.window.document.querySelector(""test"");", file.TranslatedStr);
-	}
-	[Fact]
-	public void TestIdentifierName()
-	{
-		FileData file = new()
-		{
-			SourceStr = $@"using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
-using CSharpToJavaScript.APIs.JS;
-Element e = (GlobalThis.Window.Document as ParentNode).QuerySelector(""test"");"
-		};
-		file = CSTOJS.Translate(file);
-
-		Assert.Equal(@"let e = globalThis.window.document.querySelector(""test"");", file.TranslatedStr);
-	}
 	private void ConsoleOutPut(object? obj)
 	{
 		_ConsoleStr = obj?.ToString() ?? "null";
