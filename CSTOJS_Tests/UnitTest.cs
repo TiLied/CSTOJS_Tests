@@ -342,111 +342,6 @@ namespace CSTOJS_Test.CSharp
 		Assert.Equal("GlobalThisDate", _ConsoleStr);
 	}
 
-
-
-
-	//
-	//
-	//Old tests! Should probably be deleted?
-	[Fact]
-	public void AnkiWebQuiz()
-	{
-		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "TODO!");
-		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "TODO!");
-
-		FileData file = new()
-		{
-			SourceStr = File.ReadAllText("..\\..\\..\\CSharp\\AnkiWebQuiz.cs")
-		};
-		FileData[] files = CSTOJS.Translate([file]);
-
-		_Engine.Execute(files[0].TranslatedStr);
-		Assert.Equal("", _ConsoleStr);
-	}
-	[Fact]
-	public void Test4()
-	{
-		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "TODO!");
-		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "TODO!");
-
-		FileData file = new()
-		{
-			SourceStr = File.ReadAllText("..\\..\\..\\CSharp\\test4.cs")
-		};
-		FileData[] files = CSTOJS.Translate([file]);
-
-		_Engine.Execute(files[0].TranslatedStr);
-		Assert.Equal("", _ConsoleStr);
-	}
-	[Fact]
-	public void Test6()
-	{
-		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "TODO!");
-		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "TODO!");
-
-		FileData file = new()
-		{
-			SourceStr = File.ReadAllText("..\\..\\..\\CSharp\\test6.cs")
-		};
-		FileData[] files = CSTOJS.Translate([file]);
-
-		_Engine.Execute(files[0].TranslatedStr);
-		Assert.Equal("", _ConsoleStr);
-	}
-
-	[Fact]
-	public void TestNBody()
-	{
-		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "TODO!");
-		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "TODO!");
-
-		FileData file = new()
-		{
-			SourceStr = File.ReadAllText("..\\..\\..\\CSharp\\NBody.cs")
-		};
-		FileData[] files = CSTOJS.Translate([file]);
-
-		_Engine.Execute(files[0].TranslatedStr);
-		Assert.Equal("", _ConsoleStr);
-	}
-
-	[Fact]
-	public void Test7()
-	{
-		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "TODO!");
-		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "TODO!");
-
-		FileData file = new()
-		{
-			OptionsForFile = _DefaultUnitOpt,
-			SourceStr = File.ReadAllText("..\\..\\..\\CSharp\\Test7.cs")
-		};
-		FileData[] files = CSTOJS.Translate([file]);
-
-		_Engine.Execute(files[0].TranslatedStr);
-		Assert.Equal("", _ConsoleStr);
-	}
-
-	[Fact]
-	public void Test8()
-	{
-		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.Linux), "TODO!");
-		Assert.SkipWhen(RuntimeInformation.IsOSPlatform(OSPlatform.OSX), "TODO!");
-
-		FileData file = new()
-		{
-			OptionsForFile = _DefaultUnitOpt,
-			SourceStr = File.ReadAllText("..\\..\\..\\CSharp\\Test8.cs")
-		};
-		FileData[] files = CSTOJS.Translate([file]);
-
-		_Engine.Execute(files[0].TranslatedStr);
-		Assert.Equal("Done!", _ConsoleStr);
-	}
-	//
-	//
-	//
-
 	[Theory]
 	[MemberData(nameof(TestData_Data))]
 	[MemberData(nameof(TestData_Numbers))]
@@ -806,6 +701,205 @@ namespace CSTOJS_Test.CSharp
 
 		_Engine.Execute(files[0].TranslatedStr);
 		Assert.Equal(expectedResult, _ConsoleStr);
+	}
+	[Fact]
+	public void Test_ImplicitOperatorTo()
+	{
+		FileData file = new()
+		{
+			SourceStr = $@"using CSharpToJavaScript.Utils;
+Unsupported unsupported = ""str"";"
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal($@"let unsupported = ""str"";", file.TranslatedStr);
+	}
+	[Fact]
+	public void Test_ImplicitOperatorFrom()
+	{
+		FileData file = new()
+		{
+			SourceStr = $@"using CSharpToJavaScript.Utils;
+string str = new Unsupported();"
+		};
+		file = CSTOJS.Translate(file);
+
+		//Test is only c# code!
+		//there should not be errors!
+		Assert.Equal($@"let str = new Unsupported();", file.TranslatedStr);
+	}
+	
+	[Fact]
+	public void Test_GlobalStatementFormating()
+	{
+		FileData file = new()
+		{
+			SourceStr = @"using CSharpToJavaScript.APIs.JS;
+using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
+GlobalThis.Window.Document.AddEventListener(""DOMContentLoaded"", (Event e) =>
+{
+	HTMLElement body = GlobalThis.Window.Document.Body;
+
+	Element paragraph = GlobalThis.Window.Document.CreateElement(""p"");
+	Text helloWorld = GlobalThis.Window.Document.CreateTextNode(""Hello, World!"");
+
+	paragraph.AppendChild(helloWorld);
+
+	(body as ParentNode).Append(paragraph);
+	
+	DeleteEntry(paragraph);
+}, true);
+
+void DeleteEntry(Element li)
+{
+	(li as ChildNode).Remove();
+}"
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(@"globalThis.window.document.addEventListener(""DOMContentLoaded"", (e) =>
+{
+	let body = globalThis.window.document.body;
+
+	let paragraph = globalThis.window.document.createElement(""p"");
+	let helloWorld = globalThis.window.document.createTextNode(""Hello, World!"");
+
+	paragraph.appendChild(helloWorld);
+
+	body.append(paragraph);
+	
+	DeleteEntry(paragraph);
+}, true);
+
+function DeleteEntry(li)
+{
+	li.remove();
+}", file.TranslatedStr);
+	}
+
+	[Fact]
+	public void Test_ClassFormating()
+	{
+		FileData file = new()
+		{
+			SourceStr = @"using CSharpToJavaScript.APIs.JS;
+using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
+namespace Test_ClassFormating;
+
+public class Program
+{
+	public static void Main()
+	{
+		GlobalThis.Window.Document.AddEventListener(""DOMContentLoaded"", (Event e) =>
+		{
+			HTMLElement body = GlobalThis.Window.Document.Body;
+
+			Element paragraph = GlobalThis.Window.Document.CreateElement(""p"");
+			Text helloWorld = GlobalThis.Window.Document.CreateTextNode(""Hello, World!"");
+
+			paragraph.AppendChild(helloWorld);
+
+			(body as ParentNode).Append(paragraph);
+			
+			new Program().DeleteEntry(paragraph);
+		}, true);
+	}
+	public void DeleteEntry(Element li)
+	{
+		(li as ChildNode).Remove();
+	}
+}"
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(@"
+class Program
+{
+	static Main()
+	{
+		globalThis.window.document.addEventListener(""DOMContentLoaded"", (e) =>
+		{
+			let body = globalThis.window.document.body;
+
+			let paragraph = globalThis.window.document.createElement(""p"");
+			let helloWorld = globalThis.window.document.createTextNode(""Hello, World!"");
+
+			paragraph.appendChild(helloWorld);
+
+			body.append(paragraph);
+			
+			new Program().DeleteEntry(paragraph);
+		}, true);
+	}
+	DeleteEntry(li)
+	{
+		li.remove();
+	}
+}", file.TranslatedStr);
+	}
+
+	
+	[Fact]
+	public void Test_This()
+	{
+		FileData file = new()
+		{
+			SourceStr = @"using CSharpToJavaScript.APIs.JS;
+using CSharpToJavaScript.APIs.JS.Ecma;
+using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
+namespace N_Test;
+
+public class Program
+{
+	private string _Time = new Date().ToISOString();
+	public string Time
+	{ 
+		get
+		{
+			return _Time;
+		} 
+		set
+		{
+			_Time = value;
+		}
+	}
+	public void Main()
+	{
+		Console.WriteLine(""Main"");
+
+		var that = this;
+		(GlobalThis.Window as WindowOrWorkerGlobalScope).SetInterval(() =>
+		{
+			that.Time = new Date().ToISOString();
+		}, 1000);
+	}
+}"
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(@"
+class Program
+{
+	_Time = new Date().toISOString();
+	get Time() 
+		{
+			return this._Time;
+		} 
+	set Time(value)
+		{
+			this._Time = value;
+		}
+	Main()
+	{
+		console.log(""Main"");
+
+		let that = this;
+		globalThis.window.setInterval(() =>
+		{
+			that.Time = new Date().toISOString();
+		}, 1000);
+	}
+}", file.TranslatedStr);
 	}
 	
 	private void ConsoleOutPut(object? obj)

@@ -63,7 +63,7 @@ using CSharpToJavaScript.APIs.JS;
 
 		Assert.Equal(@"if(1 === 2) {};", file.TranslatedStr);
 	}
-	
+
 	[Theory]
 	[InlineData("Delete(1);")]
 	public void Test_UnaryAttribute(string cs)
