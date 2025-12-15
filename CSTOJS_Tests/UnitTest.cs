@@ -838,7 +838,6 @@ class Program
 }", file.TranslatedStr);
 	}
 
-	
 	[Fact]
 	public void Test_This()
 	{
@@ -847,7 +846,7 @@ class Program
 			SourceStr = @"using CSharpToJavaScript.APIs.JS;
 using CSharpToJavaScript.APIs.JS.Ecma;
 using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
-namespace N_Test;
+namespace Test_This;
 
 public class Program
 {
@@ -901,7 +900,39 @@ class Program
 	}
 }", file.TranslatedStr);
 	}
-	
+
+	[Fact]
+	public void Test_ThisExplicit()
+	{
+		FileData file = new()
+		{
+			SourceStr = @"using CSharpToJavaScript.APIs.JS;
+using CSharpToJavaScript.APIs.JS.Ecma;
+using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
+namespace Test_ThisExplicit;
+
+public class Program
+{
+	private string _Time = new Date().ToISOString();
+	public void Main()
+	{
+		Console.WriteLine(this._Time);
+	}
+}"
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(@"
+class Program
+{
+	_Time = new Date().toISOString();
+	Main()
+	{
+		console.log(this._Time);
+	}
+}", file.TranslatedStr);
+	}
+
 	private void ConsoleOutPut(object? obj)
 	{
 		_ConsoleStr = obj?.ToString() ?? "null";
