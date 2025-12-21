@@ -78,4 +78,21 @@ using CSharpToJavaScript.APIs.JS;
 
 		Assert.Equal(@"delete 1;", file.TranslatedStr);
 	}
+	
+	[Theory]
+	[InlineData(@"MutationObserverInit a = new MutationObserverInit() 
+	{ Attributes = true, ChildList = true };")]
+	public void Test_ToObjectAttribute(string cs)
+	{
+		FileData file = new()
+		{
+			SourceStr = $@"using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
+using CSharpToJavaScript.APIs.JS;
+{cs}"
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(@"let a = 
+	{ attributes : true, childList : true };", file.TranslatedStr);
+	}
 }
