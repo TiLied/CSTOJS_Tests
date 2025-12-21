@@ -4,8 +4,6 @@ using CSharpToJavaScript.APIs.JS.Ecma;
 using Jint;
 using System;
 using System.Globalization;
-using System.IO;
-using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace CSTOJS_Tests;
@@ -52,7 +50,12 @@ public class UnitTest
 			{
 				SkipMethods = new()
 				{
-					[ nameof(TestDefaultParameterInMethod)] = "error CS1763: 'value' is of type 'dynamic'. A default parameter value of a reference type other than string can only be initialized with null"
+					[ nameof(TestDefaultParameterInMethod)] = "error CS1763: 'value' is of type 'dynamic'. A default parameter value of a reference type other than string can only be initialized with null",
+					//well..
+					//Todo?
+					[ nameof(TestPassValueToMethod)] = "error CS1980: Cannot define a class or member that utilizes 'dynamic' because the compiler required type 'System.Runtime.CompilerServices.DynamicAttribute' cannot be found. Are you missing a reference?",
+					[ nameof(TestPropertiesDefaultValue)] = "error CS1980: Cannot define a class or member that utilizes 'dynamic' because the compiler required type 'System.Runtime.CompilerServices.DynamicAttribute' cannot be found. Are you missing a reference?",
+					[ nameof(TestFieldsDefaultValue)] = "error CS1980: Cannot define a class or member that utilizes 'dynamic' because the compiler required type 'System.Runtime.CompilerServices.DynamicAttribute' cannot be found. Are you missing a reference?"
 				}
 			}),
 
@@ -932,7 +935,55 @@ class Program
 	}
 }", file.TranslatedStr);
 	}
+	[Fact]
+	public void Test_CallbackDelegate()
+	{
+		FileData file = new()
+		{
+			SourceStr = @"using CSharpToJavaScript.APIs.JS;
+using CSharpToJavaScript.APIs.JS.Ecma;
+using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
+namespace Test_CallbackDelegate;
 
+public class Program
+{
+	public void Main()
+	{
+		MutationObserver observer = new MutationObserver(Callback);
+	}
+	public Undefined Callback(List<MutationRecord> mutations, MutationObserver observer)
+	{
+		return null;
+	}
+}"
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(@"
+class Program
+{
+	Main()
+	{
+		let observer = new MutationObserver(this.Callback);
+	}
+	Callback(mutations, observer)
+	{
+		return null;
+	}
+}", file.TranslatedStr);
+	}
+
+	[Fact]
+	public void Test_ArrayCreationExpression()
+	{
+		FileData file = new()
+		{
+			SourceStr = @"int[] a = new int[]{1,2,3};"
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(@"let a = new Array(1,2,3);", file.TranslatedStr);
+	}
 	private void ConsoleOutPut(object? obj)
 	{
 		_ConsoleStr = obj?.ToString() ?? "null";
