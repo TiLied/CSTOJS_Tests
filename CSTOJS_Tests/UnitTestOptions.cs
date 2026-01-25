@@ -1,8 +1,6 @@
 ﻿using CSharpToJavaScript;
-using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Text;
+
 
 
 namespace CSTOJS_Tests
@@ -89,7 +87,7 @@ return 0;
 
 			Assert.Equal(expected, files[0].TranslatedStr);
 		}
-		
+
 		[Fact]
 		public void TestCustomCSNamesToJS()
 		{
@@ -106,9 +104,51 @@ return 0;
 				SourceStr = @"Console.Beep();"
 			};
 
-			FileData[] files = CSTOJS.Translate([ file ]);
+			FileData[] files = CSTOJS.Translate([file]);
 
 			Assert.Equal("console.log();", files[0].TranslatedStr);
+		}
+		
+		//TODO! more tests!
+		//TODO! better formating!
+		[Fact]
+		public void Test_MakePropertiesEnumerable()
+		{
+			FileData file = new()
+			{
+				OptionsForFile = new()
+				{
+					MakePropertiesEnumerable = true
+				},
+				SourceStr = @"using CSharpToJavaScript.APIs.JS;
+using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
+
+namespace Test_MakePropertiesEnumerable;
+
+public class TestClass
+{
+	public int Prop { get; set; } = 5;
+	public TestClass()
+	{
+		Console.WriteLine(Prop);
+	}
+}"
+			};
+
+			FileData[] files = CSTOJS.Translate([file]);
+
+			Assert.Equal(@"
+class TestClass
+{
+	#_Prop_= 5;
+	
+	constructor()
+	{
+ Object.defineProperty(this, 'Prop', { enumerable: true,get: function () { return this.#_Prop_; } ,
+	set: function (value) { this.#_Prop_ = value; } } );
+		console.log(this.Prop);
+	}
+}", files[0].TranslatedStr);
 		}
 	}
 }
