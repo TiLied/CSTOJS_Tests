@@ -34,21 +34,48 @@ using CSharpToJavaScript.APIs.JS;
 		Assert.Equal(@"let d = globalThis.window.document;", file.TranslatedStr);
 	}
 
-	//Test ToAttribute("None") too.
 	[Theory]
-	[InlineData("Console.WriteLine(PressureSource.Cpu);")]
-	public void Test_EnumValueAttribute(string cs)
+	[InlineData(@"namespace Test_ToAttributeNone;
+[To(ToAttribute.None)] public class Test{
+	[Value(""Test1"")] 
+	public static int TestField = 1;
+	public Test() { Console.WriteLine(Test.TestField); }
+}", @"class Test{
+	static TestField = 1;
+	constructor() { console.log(.Test1); }
+}")]
+	[InlineData(@"namespace Test_ToAttributeNone;
+[To(ToAttribute.NoneWithTailingDotRemoved)] public class Test{
+	[Value(""Test2"")] 
+	public static int TestField = 1;
+	public Test() { Console.WriteLine(Test.TestField); }
+}", @"class Test{
+	static TestField = 1;
+	constructor() { console.log(Test2); }
+}")]
+	[InlineData(@"namespace Test_ToAttributeNone;
+[Value(""Test3"")] public class Test{
+	[To(ToAttribute.NoneWithLeadingDotRemoved)]
+	public static int TestField = 1;
+	public Test() { Console.WriteLine(Test.TestField); }
+}", @"class Test{
+	static TestField = 1;
+	constructor() { console.log(Test3); }
+}")]
+	public void Test_ToAttributeNone(string cs, string expectedJS)
 	{
 		FileData file = new()
 		{
 			SourceStr = $@"using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
 using CSharpToJavaScript.APIs.JS;
+using CSharpToJavaScript.Utils;
 {cs}"
 		};
 		file = CSTOJS.Translate(file);
 
-		Assert.Equal(@"console.log(""cpu"");", file.TranslatedStr);
+		Assert.Equal(expectedJS, file.TranslatedStr);
 	}
+	
 	[Theory]
 	[InlineData("if(EqualsStrict(1, 2)) {};")]
 	public void Test_BinaryAttribute(string cs)
