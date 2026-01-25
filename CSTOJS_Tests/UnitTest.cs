@@ -1,5 +1,4 @@
-﻿
-using CSharpToJavaScript;
+﻿using CSharpToJavaScript;
 using CSharpToJavaScript.APIs.JS.Ecma;
 using Jint;
 using System;
@@ -936,6 +935,82 @@ class Program
 }", file.TranslatedStr);
 	}
 	[Fact]
+	public void Test_StaticMethodCall()
+	{
+		FileData file = new()
+		{
+			SourceStr = @"using CSharpToJavaScript.APIs.JS;
+using CSharpToJavaScript.APIs.JS.Ecma;
+using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
+namespace Test_StaticMethodCall;
+
+public static class Program
+{
+	public static void Main()
+	{
+		Console.WriteLine(Program.StatcicMethod());
+	}
+	public static int StatcicMethod()
+	{
+		return 1;
+	}
+}"
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(@"
+class Program
+{
+	static Main()
+	{
+		console.log(Program.StatcicMethod());
+	}
+	static StatcicMethod()
+	{
+		return 1;
+	}
+}", file.TranslatedStr);
+	}
+
+	//TODO! How?
+	[Fact(Skip = "skip for now.")]
+	public void Test_VirtualMethodCall()
+	{
+		FileData file = new()
+		{
+			SourceStr = @"using CSharpToJavaScript.APIs.JS;
+using CSharpToJavaScript.APIs.JS.Ecma;
+using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
+namespace Test_VirtualMethodCall;
+
+public class Base
+{
+	public void Test(){}
+}
+public class Program : Base
+{
+	public void Main()
+	{
+		Test();
+	}
+}"
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(@"
+class Base
+{
+	Test(){}
+}
+class Program extends Base
+{
+	Main()
+	{
+		this.Test();
+	}
+}", file.TranslatedStr);
+	}
+	[Fact]
 	public void Test_CallbackDelegate()
 	{
 		FileData file = new()
@@ -983,6 +1058,18 @@ class Program
 		file = CSTOJS.Translate(file);
 
 		Assert.Equal(@"let a = new Array(1,2,3);", file.TranslatedStr);
+	}
+
+	[Fact]
+	public void Test_SpecialSyntax()
+	{
+		FileData file = new()
+		{
+			SourceStr = @"//console.log(1);\\"
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(@"console.log(1);", file.TranslatedStr);
 	}
 	private void ConsoleOutPut(object? obj)
 	{
