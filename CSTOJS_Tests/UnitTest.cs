@@ -972,16 +972,15 @@ class Program
 }", file.TranslatedStr);
 	}
 
-	//TODO! How?
-	[Fact(Skip = "skip for now.")]
-	public void Test_VirtualMethodCall()
+	[Fact]
+	public void Test_BaseMethodCall()
 	{
 		FileData file = new()
 		{
 			SourceStr = @"using CSharpToJavaScript.APIs.JS;
 using CSharpToJavaScript.APIs.JS.Ecma;
 using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
-namespace Test_VirtualMethodCall;
+namespace Test_BaseMethodCall;
 
 public class Base
 {
@@ -1070,6 +1069,19 @@ class Program
 		file = CSTOJS.Translate(file);
 
 		Assert.Equal(@"console.log(1);", file.TranslatedStr);
+	}
+	[Theory]
+	[InlineData("var a = (dynamic)1;", "let a = 1;")]
+	[InlineData("int a = 1; var b = (dynamic)a;", "let a = 1; let b = a;")]
+	public void Test_IgnoreCast(string cs, string expected)
+	{
+		FileData file = new()
+		{
+			SourceStr = cs
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(expected, file.TranslatedStr);
 	}
 	private void ConsoleOutPut(object? obj)
 	{

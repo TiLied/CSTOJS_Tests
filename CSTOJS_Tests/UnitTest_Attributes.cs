@@ -161,7 +161,7 @@ using CSharpToJavaScript.APIs.JS;
 	{ attributes : true, childList : true };", file.TranslatedStr);
 	}
 	[Fact]
-	public void Test_GenericAsAttribute()
+	public void Test_GenericAsArgument()
 	{
 		FileData file = new()
 		{
@@ -169,7 +169,7 @@ using CSharpToJavaScript.APIs.JS;
 using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
 using CSharpToJavaScript.APIs.JS.Ecma;
 
-namespace Test_GenericAsAttribute;
+namespace Test_GenericAsArgument;
 
 public class MyAutonomousElement : HTMLElement 
 {
