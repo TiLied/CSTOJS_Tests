@@ -1083,10 +1083,27 @@ class Program
 
 		Assert.Equal(expected, file.TranslatedStr);
 	}
+	[Theory]
+	[InlineData(@"using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
+using CSharpToJavaScript.APIs.JS; 
+((ParentNode)GlobalThis.Window.Document.Head).Append("""");")]
+	[InlineData(@"using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
+using CSharpToJavaScript.APIs.JS; 
+(GlobalThis.Window.Document.Head as ParentNode).Append("""");")]
+	public void Test_Casting(string cs)
+	{
+		FileData file = new()
+		{
+			SourceStr = cs
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(@"globalThis.window.document.head.append("""");", file.TranslatedStr);
+	}
+
 	private void ConsoleOutPut(object? obj)
 	{
 		_ConsoleStr = obj?.ToString() ?? "null";
 	}
-
 }
 
