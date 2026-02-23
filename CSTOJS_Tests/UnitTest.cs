@@ -1071,9 +1071,17 @@ class Program
 		Assert.Equal(@"console.log(1);", file.TranslatedStr);
 	}
 	[Theory]
+	[InlineData(@"using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
+using CSharpToJavaScript.APIs.JS; 
+((ParentNode)GlobalThis.Window.Document.Head).Append("""");", @"globalThis.window.document.head.append("""");")]
+	[InlineData(@"using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
+using CSharpToJavaScript.APIs.JS; 
+(GlobalThis.Window.Document.Head as ParentNode).Append("""");", @"globalThis.window.document.head.append("""");")]
 	[InlineData("var a = (dynamic)1;", "let a = 1;")]
 	[InlineData("int a = 1; var b = (dynamic)a;", "let a = 1; let b = a;")]
-	public void Test_IgnoreCast(string cs, string expected)
+	[InlineData("dynamic a = 1 as dynamic;", "let a = 1;")]
+	[InlineData("int a = 1; var b = a as dynamic;", "let a = 1; let b = a;")]
+	public void Test_Casting(string cs, string expected)
 	{
 		FileData file = new()
 		{
@@ -1082,23 +1090,6 @@ class Program
 		file = CSTOJS.Translate(file);
 
 		Assert.Equal(expected, file.TranslatedStr);
-	}
-	[Theory]
-	[InlineData(@"using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
-using CSharpToJavaScript.APIs.JS; 
-((ParentNode)GlobalThis.Window.Document.Head).Append("""");")]
-	[InlineData(@"using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
-using CSharpToJavaScript.APIs.JS; 
-(GlobalThis.Window.Document.Head as ParentNode).Append("""");")]
-	public void Test_Casting(string cs)
-	{
-		FileData file = new()
-		{
-			SourceStr = cs
-		};
-		file = CSTOJS.Translate(file);
-
-		Assert.Equal(@"globalThis.window.document.head.append("""");", file.TranslatedStr);
 	}
 
 	private void ConsoleOutPut(object? obj)
