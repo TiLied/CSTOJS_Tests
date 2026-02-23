@@ -1091,7 +1091,48 @@ using CSharpToJavaScript.APIs.JS;
 
 		Assert.Equal(expected, file.TranslatedStr);
 	}
+	[Fact]
+	public void Test_PropertyMethodCall()
+	{
+		FileData file = new()
+		{
+			SourceStr = @"using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
+using CSharpToJavaScript.APIs.JS; 
+namespace Test_PropertyMethodCall;
 
+public class Test
+{
+	public void Method(){}
+}
+public class Main
+{
+	public Test test {get; set;} = new Test();
+	
+	public Main()
+	{
+		test.Method();
+	} 
+}"
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(@"
+class Test
+{
+	Method(){}
+}
+class Main
+{
+	#_test_= new Test();
+	get test() { return this.#_test_; } 
+	set test(value) { this.#_test_ = value; } 
+	
+	constructor()
+	{
+		this.test.Method();
+	} 
+}", file.TranslatedStr);
+	}
 	private void ConsoleOutPut(object? obj)
 	{
 		_ConsoleStr = obj?.ToString() ?? "null";
