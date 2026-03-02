@@ -1091,6 +1091,7 @@ using CSharpToJavaScript.APIs.JS;
 
 		Assert.Equal(expected, file.TranslatedStr);
 	}
+
 	[Fact]
 	public void Test_PropertyMethodCall()
 	{
@@ -1106,11 +1107,11 @@ public class Test
 }
 public class Main
 {
-	public Test test {get; set;} = new Test();
+	public Test Prop {get; set;} = new Test();
 	
 	public Main()
 	{
-		test.Method();
+		Prop.Method();
 	} 
 }"
 		};
@@ -1123,16 +1124,244 @@ class Test
 }
 class Main
 {
-	#_test_= new Test();
-	get test() { return this.#_test_; } 
-	set test(value) { this.#_test_ = value; } 
+	#_Prop_= new Test();
+	get Prop() { return this.#_Prop_; } 
+	set Prop(value) { this.#_Prop_ = value; } 
 	
 	constructor()
 	{
-		this.test.Method();
+		this.Prop.Method();
 	} 
 }", file.TranslatedStr);
 	}
+
+	[Fact]
+	public void Test_PropertyBaseMethodCall()
+	{
+		FileData file = new()
+		{
+			SourceStr = @"using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
+using CSharpToJavaScript.APIs.JS; 
+namespace Test_PropertyBaseMethodCall;
+
+public class Base
+{
+	public void Method(){}
+}
+public class Test : Base
+{
+}
+public class Main : Base
+{
+	public Test Prop {get; set;} = new Test();
+	
+	public Main()
+	{
+		Prop.Method();
+	} 
+}"
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(@"
+class Base
+{
+	Method(){}
+}
+class Test extends Base
+{
+}
+class Main extends Base
+{
+	#_Prop_= new Test();
+	get Prop() { return this.#_Prop_; } 
+	set Prop(value) { this.#_Prop_ = value; } 
+	
+	constructor()
+	{
+		this.Prop.Method();
+	} 
+}", file.TranslatedStr);
+	}
+
+	[Fact]
+	public void Test_FieldBaseFieldBaseMethodCall()
+	{
+		FileData file = new()
+		{
+			SourceStr = @"using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
+using CSharpToJavaScript.APIs.JS; 
+namespace Test_FieldBaseFieldBaseMethodCall;
+
+public class Base
+{
+	public Test F1 = new Test();
+	
+	public void M(){}
+}
+public class Test : Base
+{
+}
+public class Main : Base
+{
+	public Test F2 = new Test();
+	public Main()
+	{
+		F2.F1.M();
+	} 
+}"
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(@"
+class Base
+{
+	F1 = new Test();
+	
+	M(){}
+}
+class Test extends Base
+{
+}
+class Main extends Base
+{
+	F2 = new Test();
+	constructor()
+	{
+		this.F2.F1.M();
+	} 
+}", file.TranslatedStr);
+	}
+
+	[Fact]
+	public void Test_DoubleInheritanceMethodCall()
+	{
+		FileData file = new()
+		{
+			SourceStr = @"using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
+using CSharpToJavaScript.APIs.JS; 
+namespace Test_DoubleInheritanceMethodCall;
+
+public class Base
+{
+	public void Method(){}
+}
+public class Test : Base
+{
+}
+public class Main : Test
+{
+	public Main()
+	{
+		Method();
+	} 
+}"
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(@"
+class Base
+{
+	Method(){}
+}
+class Test extends Base
+{
+}
+class Main extends Test
+{
+	constructor()
+	{
+		this.Method();
+	} 
+}", file.TranslatedStr);
+	}
+	[Fact]
+	public void Test_DoubleInheritanceField()
+	{
+		FileData file = new()
+		{
+			SourceStr = @"using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
+using CSharpToJavaScript.APIs.JS; 
+namespace Test_DoubleInheritanceField;
+
+public class Base
+{
+	public int Field = 0;
+}
+public class Test : Base
+{
+}
+public class Main : Test
+{
+	public Main()
+	{
+		Console.WriteLine(Field);
+	} 
+}"
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(@"
+class Base
+{
+	Field = 0;
+}
+class Test extends Base
+{
+}
+class Main extends Test
+{
+	constructor()
+	{
+		console.log(this.Field);
+	} 
+}", file.TranslatedStr);
+	}
+	[Fact]
+	public void Test_DoubleInheritanceProp()
+	{
+		FileData file = new()
+		{
+			SourceStr = @"using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
+using CSharpToJavaScript.APIs.JS; 
+namespace Test_DoubleInheritanceProp;
+
+public class Base
+{
+	public int Prop {get; set;} = 0;
+}
+public class Test : Base
+{
+}
+public class Main : Test
+{
+	public Main()
+	{
+		Console.WriteLine(Prop);
+	} 
+}"
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(@"
+class Base
+{
+	#_Prop_= 0;
+	get Prop() { return this.#_Prop_; } 
+	set Prop(value) { this.#_Prop_ = value; } 
+}
+class Test extends Base
+{
+}
+class Main extends Test
+{
+	constructor()
+	{
+		console.log(this.Prop);
+	} 
+}", file.TranslatedStr);
+	}
+	
 	private void ConsoleOutPut(object? obj)
 	{
 		_ConsoleStr = obj?.ToString() ?? "null";
