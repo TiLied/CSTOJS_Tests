@@ -1232,6 +1232,58 @@ class Main extends Base
 	} 
 }", file.TranslatedStr);
 	}
+	[Fact]
+	public void Test_FeildMethodCallWithArgs()
+	{
+		FileData file = new()
+		{
+			SourceStr = @"using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
+using CSharpToJavaScript.APIs.JS; 
+namespace Test_FeildMethodCallWithArgs;
+
+public class Base
+{
+	public Test F1 = new Test();
+	
+	public bool M(){ return true; }
+}
+public class Test : Base
+{
+	public void M2(Test test, Test test2){}
+}
+public class Main : Base
+{
+	public Test F2 = new Test();
+	public Main()
+	{
+		F2.M2(F2.F1, F2.F1);
+		Console.WriteLine(F2.F1.M());
+	}
+}"
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(@"
+class Base
+{
+	F1 = new Test();
+	
+	M(){ return true; }
+}
+class Test extends Base
+{
+	M2(test, test2){}
+}
+class Main extends Base
+{
+	F2 = new Test();
+	constructor()
+	{
+		this.F2.M2(this.F2.F1, this.F2.F1);
+		console.log(this.F2.F1.M());
+	}
+}", file.TranslatedStr);
+	}
 
 	[Fact]
 	public void Test_DoubleInheritanceMethodCall()
@@ -1361,7 +1413,124 @@ class Main extends Test
 	} 
 }", file.TranslatedStr);
 	}
+
+	[Fact]
+	public void Test_ExplicitThisWithImplicitThis()
+	{
+		FileData file = new()
+		{
+			SourceStr = @"using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
+using CSharpToJavaScript.APIs.JS; 
+namespace Test_ExplicitThisWithImplicitThis;
+
+public class Main
+{
+	private bool F1 = true;
+	private bool F2 = true;
 	
+	public Main()
+	{
+		this.M(F1, this.F2);
+	}
+	public void M(bool b1, bool b2){}
+}"
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(@"
+class Main
+{
+	F1 = true;
+	F2 = true;
+	
+	constructor()
+	{
+		this.M(this.F1, this.F2);
+	}
+	M(b1, b2){}
+}", file.TranslatedStr);
+
+	}
+	[Fact]
+	public void Test_CallBaseMethod()
+	{
+		FileData file = new()
+		{
+			SourceStr = @"using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
+using CSharpToJavaScript.APIs.JS; 
+namespace Test_CallBaseMethod;
+
+public class Base
+{
+	public virtual void M(){}
+}
+public class Main : Base
+{
+	public Main()
+	{
+		M();
+	}
+	public override void M()
+	{
+		base.M();
+	}
+}"
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(@"
+class Base
+{
+	M(){}
+}
+class Main extends Base
+{
+	constructor()
+	{
+		this.M();
+	}
+	M()
+	{
+		super.M();
+	}
+}", file.TranslatedStr);
+
+	}
+	[Fact]
+	public void Test_PrintTwoFields()
+	{
+		FileData file = new()
+		{
+			SourceStr = @"using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
+using CSharpToJavaScript.APIs.JS; 
+namespace Test_PrintTwoFields;
+
+public class Main
+{
+	private int F1 = 1;
+	private int F2 = 2;
+	
+	public Main()
+	{
+		Console.WriteLine($""{F1} {F2}"");
+	}
+}"
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(@"
+class Main
+{
+	F1 = 1;
+	F2 = 2;
+	
+	constructor()
+	{
+		console.log(`${this.F1} ${this.F2}`);
+	}
+}", file.TranslatedStr);
+
+	}
 	private void ConsoleOutPut(object? obj)
 	{
 		_ConsoleStr = obj?.ToString() ?? "null";
