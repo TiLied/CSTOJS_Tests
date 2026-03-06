@@ -46,7 +46,7 @@ using CSharpToJavaScript.APIs.JS;
 	constructor() { console.log(.Test1); }
 }")]
 	[InlineData(@"namespace Test_ToAttributeNone;
-[To(ToAttribute.NoneWithTailingDotRemoved)] public class Test{
+[To(ToAttribute.NoneWithTrailingDotRemoved)] public class Test{
 	[Value(""Test2"")] 
 	public static int TestField = 1;
 	public Test() { Console.WriteLine(Test.TestField); }

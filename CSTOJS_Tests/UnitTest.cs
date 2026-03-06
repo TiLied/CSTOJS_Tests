@@ -54,7 +54,8 @@ public class UnitTest
 					//Todo?
 					[ nameof(TestPassValueToMethod)] = "error CS1980: Cannot define a class or member that utilizes 'dynamic' because the compiler required type 'System.Runtime.CompilerServices.DynamicAttribute' cannot be found. Are you missing a reference?",
 					[ nameof(TestPropertiesDefaultValue)] = "error CS1980: Cannot define a class or member that utilizes 'dynamic' because the compiler required type 'System.Runtime.CompilerServices.DynamicAttribute' cannot be found. Are you missing a reference?",
-					[ nameof(TestFieldsDefaultValue)] = "error CS1980: Cannot define a class or member that utilizes 'dynamic' because the compiler required type 'System.Runtime.CompilerServices.DynamicAttribute' cannot be found. Are you missing a reference?"
+					[ nameof(TestFieldsDefaultValue)] = "error CS1980: Cannot define a class or member that utilizes 'dynamic' because the compiler required type 'System.Runtime.CompilerServices.DynamicAttribute' cannot be found. Are you missing a reference?",
+					[ nameof(Test_ReturnValue)] = "error CS1980: Cannot define a class or member that utilizes 'dynamic' because the compiler required type 'System.Runtime.CompilerServices.DynamicAttribute' cannot be found. Are you missing a reference?",
 				}
 			}),
 
@@ -95,7 +96,8 @@ public class UnitTest
 					[ nameof(TestDefaultParameterInMethod) ] = "error CS1021: Integral constant is too large",
 					[ nameof(TestLocalValue) ] = "error CS1021: Integral constant is too large",
 					[ nameof(TestPassValueToMethod) ] = "error CS1021: Integral constant is too large",
-					[ nameof(TestPropertiesDefaultValue) ] = "error CS1021: Integral constant is too large"
+					[ nameof(TestPropertiesDefaultValue) ] = "error CS1021: Integral constant is too large",
+					[ nameof(Test_ReturnValue)] = "error CS1021: Integral constant is toolarge",
 				}
 			}),
 			new (new("double", "-1.7976931348623157E+308", Number.MIN_SAFE_INTEGER.ToString())),
@@ -112,7 +114,7 @@ public class UnitTest
 					[ nameof(TestLocalValue) ] = "error CS0266: Cannot implicitly convert type 'long' to 'nint'. An explicit conversion exists (are you missing a cast?)",
 					[ nameof(TestPassValueToMethod) ] = "error CS1503: Argument 1: cannot convert from 'long' to 'nint'",
 					[ nameof(TestPropertiesDefaultValue) ] = "error CS0266: Cannot implicitly convert type 'long' to 'nint'. An explicit conversion exists (are you missing a cast?)",
-
+					[ nameof(Test_ReturnValue)] = "error CS0266: Cannot implicitly convert type 'long' to 'nint'. An explicit conversion exists(are you missing a cast?)",
 				}
 			}),
 			new (new("nuint", nuint.MinValue.ToString(), string.Empty)),
@@ -132,7 +134,8 @@ public class UnitTest
 					[ nameof(TestDefaultParameterInMethod)] = "error CS1021: Integral constant is too large",
 					[ nameof(TestLocalValue) ] = "error CS1021: Integral constant is too large",
 					[ nameof(TestPassValueToMethod) ] = "error CS1021: Integral constant is too large",
-					[ nameof(TestPropertiesDefaultValue) ] = "error CS1021: Integral constant is too large"
+					[ nameof(TestPropertiesDefaultValue) ] = "error CS1021: Integral constant is too large",
+					[ nameof(Test_ReturnValue)] = "error CS1021: Integral constant is toolarge",
 				}
 			}),
 			new (new("double", "1.7976931348623157E+308", Number.MAX_SAFE_INTEGER.ToString())),
@@ -149,6 +152,7 @@ public class UnitTest
 					[ nameof(TestLocalValue) ] = "error CS0266: Cannot implicitly convert type 'long' to 'nint'. An explicit conversion exists (are you missing a cast?)",
 					[ nameof(TestPassValueToMethod) ] = "error CS1503: Argument 1: cannot convert from 'long' to 'nint'",
 					[ nameof(TestPropertiesDefaultValue) ] = "error CS0266: Cannot implicitly convert type 'long' to 'nint'. An explicit conversion exists (are you missing a cast?)",
+					[ nameof(Test_ReturnValue)] = "error CS0266: Cannot implicitly convert type 'long' to 'nint'. An explicit conversion exists(are you missing a cast?)",
 				}
 			}),
 			new (new("nuint", nuint.MaxValue.ToString() , Number.MAX_SAFE_INTEGER.ToString())
@@ -161,6 +165,7 @@ public class UnitTest
 					[ nameof(TestLocalValue)] = "error CS0266: Cannot implicitly convert type 'ulong' to 'nuint'. An explicit conversion exists (are you missing a cast?)",
 					[ nameof(TestPassValueToMethod) ] = "error CS1503: Argument 1: cannot convert from 'ulong' to 'nuint'",
 					[ nameof(TestPropertiesDefaultValue)] = "error CS0266: Cannot implicitly convert type 'ulong' to 'nuint'. An explicit conversion exists (are you missing a cast?)",
+					[ nameof(Test_ReturnValue)] = "error CS0266: Cannot implicitly convert type 'ulong' to 'nuint'. An explicit conversion exists(are you missing a cast?)",
 				}
 			}),
 			new (new("long", long.MaxValue.ToString(), Number.MAX_SAFE_INTEGER.ToString())),
@@ -601,6 +606,52 @@ namespace CSTOJS_Test.CSharp
 		Assert.Equal(strExpected, _ConsoleStr);
 	}
 
+	[Theory]
+	[MemberData(nameof(TestData_Data))]
+	[MemberData(nameof(TestData_Numbers))]
+	[MemberData(nameof(TestData_VariousNumbers))]
+	public void Test_ReturnValue(TestData data)
+	{
+		string methodName = nameof(Test_ReturnValue);
+
+		if (data.SkipMethods.TryGetValue(methodName, out string? reason))
+			Assert.SkipWhen(true, reason);
+
+		FileData file = new()
+		{
+			OptionsForFile = _DefaultUnitOpt,
+			SourceStr = $@"using CSharpToJavaScript;
+using Microsoft.CodeAnalysis;
+
+using System;
+using System.Threading.Tasks;
+using Jint;
+
+using System.Text;
+using Boolean = CSharpToJavaScript.APIs.JS.Ecma.Boolean;
+namespace Test_ReturnValue;
+public class UnitTest
+{{
+	public UnitTest()
+	{{
+		Console.WriteLine(M());
+	}}
+	public {data.CSType} M(){{ return {data.CSValue}; }}
+}}
+public class CustomClass
+{{
+	public CustomClass()
+	{{
+	}}
+}}"
+		};
+		FileData[] files = CSTOJS.Translate([file]);
+
+		_Engine.Execute(files[0].TranslatedStr);
+
+		string strExpected = data.Expected == string.Empty ? data.CSValue : data.Expected;
+		Assert.Equal(strExpected, _ConsoleStr);
+	}
 
 
 	//https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Expressions_and_operators
@@ -730,7 +781,7 @@ string str = new Unsupported();"
 		//there should not be errors!
 		Assert.Equal($@"let str = new Unsupported();", file.TranslatedStr);
 	}
-	
+
 	[Fact]
 	public void Test_GlobalStatementFormating()
 	{
@@ -1530,6 +1581,114 @@ class Main
 	}
 }", file.TranslatedStr);
 
+	}
+
+	[Fact]
+	public void Test_ListPropCallBaseMethod()
+	{
+		FileData file = new()
+		{
+			SourceStr = @"using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
+using CSharpToJavaScript.APIs.JS; 
+namespace Test_ListPropCallBaseMethod;
+
+public class Base
+{
+	public void M(){}
+}
+public class Test : Base
+{
+}
+public class Main : Base
+{
+	private List<Test> F {get; set;} = new();
+		
+	public Main()
+	{
+		F.Add(new Test());
+		F[0].M();
+	}
+}"
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(@"
+class Base
+{
+	M(){}
+}
+class Test extends Base
+{
+}
+class Main extends Base
+{
+	#_F_= new Array();
+	get F() { return this.#_F_; } 
+	set F(value) { this.#_F_ = value; } 
+		
+	constructor()
+	{
+		this.F.push(new Test());
+		this.F[0].M();
+	}
+}", file.TranslatedStr);
+	}
+
+	[Fact]
+	public void Test_ListPropCallBaseMethod2()
+	{
+		FileData file = new()
+		{
+			SourceStr = @"using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
+using CSharpToJavaScript.APIs.JS; 
+namespace Test_CallBaseMethod;
+
+public class Base
+{
+	public int M(){ return 1;}
+}
+public class Test : Base
+{
+}
+public class Main : Base
+{
+	private List<Test> F {get; set;} = new();
+	
+	public Main()
+	{
+		F.Add(new Test());
+		for(int i = 0; i < F.Count; i++)
+		{
+			Console.WriteLine(F[i].M());
+		}
+	}
+}"
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(@"
+class Base
+{
+	M(){ return 1;}
+}
+class Test extends Base
+{
+}
+class Main extends Base
+{
+	#_F_= new Array();
+	get F() { return this.#_F_; } 
+	set F(value) { this.#_F_ = value; } 
+	
+	constructor()
+	{
+		this.F.push(new Test());
+		for(let i = 0; i < this.F.length; i++)
+		{
+			console.log(this.F[i].M());
+		}
+	}
+}", file.TranslatedStr);
 	}
 	private void ConsoleOutPut(object? obj)
 	{
