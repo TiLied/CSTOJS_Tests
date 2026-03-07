@@ -1690,6 +1690,104 @@ class Main extends Base
 	}
 }", file.TranslatedStr);
 	}
+	[Fact]
+	public void Test_ExplicitProp()
+	{
+		FileData file = new()
+		{
+			SourceStr = @"using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
+using CSharpToJavaScript.APIs.JS; 
+namespace Test_ExplicitProp;
+
+public class Main
+{
+	private HTMLTemplateElement _P = ((ParentNode)GlobalThis.Window.Document.Body).QuerySelector<HTMLTemplateElement>(""#temp"");
+	public HTMLTemplateElement P
+	{
+		get { return _P; }
+		set
+		{
+			_P = value;
+		}
+	}
+	public Main()
+	{
+		Console.WriteLine(P);
+	}
+}"
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(@"
+class Main
+{
+	_P = globalThis.window.document.body.querySelector(""#temp"");
+	get P()
+{ return this._P; }
+	set P(value)
+		{
+			this._P = value;
+		}
+	constructor()
+	{
+		console.log(this.P);
+	}
+}", file.TranslatedStr);
+	}
+	[Fact]
+	public void Test_ExplicitPropIfStatement()
+	{
+		FileData file = new()
+		{
+			SourceStr = @"using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
+using CSharpToJavaScript.APIs.JS; 
+namespace Test_ExplicitPropIfStatement;
+
+public class Main
+{
+	private HTMLTemplateElement _P = ((ParentNode)GlobalThis.Window.Document.Body).QuerySelector<HTMLTemplateElement>(""#temp"");
+	public HTMLTemplateElement P
+	{
+		get { return _P; }
+		set
+		{
+			_P = value;
+		}
+	}
+	public Main()
+	{
+		Console.WriteLine(P);
+		P = new HTMLTemplateElement();
+		if(P == Undefined.Value){}
+		if(P == Undefined.Value){}
+	}
+}",
+			//TODO!
+			//error CS0019: Operator '==' cannot be applied to operands of type 'HTMLTemplateElement' and 'GlobalObject.Undefined'
+			OptionsForFile = new() { DisableCompilationErrors = true }
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(@"
+class Main
+{
+	_P = globalThis.window.document.body.querySelector(""#temp"");
+	get P()
+{ return this._P; }
+	set P(value)
+		{
+			this._P = value;
+		}
+	constructor()
+	{
+		console.log(this.P);
+		this.P = new HTMLTemplateElement();
+		if(this.P == undefined){}
+		if(this.P == undefined){}
+	}
+}", file.TranslatedStr);
+	}
+
 	private void ConsoleOutPut(object? obj)
 	{
 		_ConsoleStr = obj?.ToString() ?? "null";
