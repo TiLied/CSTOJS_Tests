@@ -128,7 +128,7 @@ using CSharpToJavaScript.APIs.JS;
 	[InlineData(@"string t = TypeOf(GlobalThis.Number(1));", @"let t = typeof globalThis.Number(1);")]
 	[InlineData(@"string t = TypeOf("""");", @"let t = typeof """";")]
 	[InlineData(@"string t = TypeOf(TypeOf(1));", @"let t = typeof typeof 1;")]
-	[InlineData(@"string t = TypeOf<Undefined>();", @"let t = typeof undefined;", Skip = "TODO!!!")]
+	[InlineData(@"string t = TypeOf<Undefined>();", @"let t = typeof undefined;")]
 	[InlineData(@"string t = TypeOf(new Date());", @"let t = typeof new Date();")]
 	public void Test_TypeOfUnaryAttribute(string cs, string expected)
 	{
@@ -145,7 +145,7 @@ using Date = CSharpToJavaScript.APIs.JS.Ecma.Date;
 		Assert.Equal(expected, file.TranslatedStr);
 	}
 	[Theory]
-	[InlineData(@"MutationObserverInit a = new MutationObserverInit() 
+	[InlineData(@"MutationObserverInit a = new MutationObserverInit()
 	{ Attributes = true, ChildList = true };")]
 	public void Test_ToObjectAttribute(string cs)
 	{
@@ -161,7 +161,7 @@ using CSharpToJavaScript.APIs.JS;
 	{ attributes : true, childList : true };", file.TranslatedStr);
 	}
 	[Fact]
-	public void Test_GenericAsArgument()
+	public void Test_GenericAsArgumentAttribute()
 	{
 		FileData file = new()
 		{
@@ -169,11 +169,11 @@ using CSharpToJavaScript.APIs.JS;
 using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
 using CSharpToJavaScript.APIs.JS.Ecma;
 
-namespace Test_GenericAsArgument;
+namespace Test_GenericAsArgumentAttribute;
 
 public class MyAutonomousElement : HTMLElement 
 {
-	MyAutonomousElement() : base() { }
+	MyAutonomousElement() : base() {}
 }
 public class TestClass
 {
@@ -188,7 +188,7 @@ public class TestClass
 		Assert.Equal(@"
 class MyAutonomousElement extends HTMLElement 
 {
-	constructor()  { 	super() }
+	constructor()  {super();}
 }
 class TestClass
 {

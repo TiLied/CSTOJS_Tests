@@ -141,11 +141,9 @@ public class TestClass
 class TestClass
 {
 	#_Prop_= 5;
-	
 	constructor()
 	{
- Object.defineProperty(this, 'Prop', { enumerable: true,get: function () { return this.#_Prop_; } ,
-	set: function (value) { this.#_Prop_ = value; } } );
+Object.defineProperty(this, 'Prop', { enumerable: true, get: function() { return this.#_Prop_; }, set: function (value) { this.#_Prop_ = value; } });
 		console.log(this.Prop);
 	}
 }", files[0].TranslatedStr);

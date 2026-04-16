@@ -468,10 +468,6 @@ namespace CSTOJS_Test.CSharp
 using CSharpToJavaScript;
 using Microsoft.CodeAnalysis;
 
-using System;
-using System.Threading.Tasks;
-using Jint;
-
 using System.Text;
 using Boolean = CSharpToJavaScript.APIs.JS.Ecma.Boolean;
 namespace CSTOJS_Test.CSharp
@@ -517,10 +513,6 @@ namespace CSTOJS_Test.CSharp
 			SourceStr = $@"
 using CSharpToJavaScript;
 using Microsoft.CodeAnalysis;
-
-using System;
-using System.Threading.Tasks;
-using Jint;
 
 using System.Text;
 using Boolean = CSharpToJavaScript.APIs.JS.Ecma.Boolean;
@@ -571,10 +563,6 @@ namespace CSTOJS_Test.CSharp
 using CSharpToJavaScript;
 using Microsoft.CodeAnalysis;
 
-using System;
-using System.Threading.Tasks;
-using Jint;
-
 using System.Text;
 using Boolean = CSharpToJavaScript.APIs.JS.Ecma.Boolean;
 namespace CSTOJS_Test.CSharp
@@ -622,10 +610,6 @@ namespace CSTOJS_Test.CSharp
 			OptionsForFile = _DefaultUnitOpt,
 			SourceStr = $@"using CSharpToJavaScript;
 using Microsoft.CodeAnalysis;
-
-using System;
-using System.Threading.Tasks;
-using Jint;
 
 using System.Text;
 using Boolean = CSharpToJavaScript.APIs.JS.Ecma.Boolean;
@@ -729,10 +713,6 @@ public class CustomClass
 			SourceStr = $@"
 using CSharpToJavaScript;
 using Microsoft.CodeAnalysis;
-
-using System;
-using System.Threading.Tasks;
-using Jint;
 
 using System.Text;
 using Boolean = CSharpToJavaScript.APIs.JS.Ecma.Boolean;
@@ -933,7 +913,7 @@ public class Program
 class Program
 {
 	_Time = new Date().toISOString();
-	get Time() 
+	get Time()
 		{
 			return this._Time;
 		} 
@@ -1176,8 +1156,8 @@ class Test
 class Main
 {
 	#_Prop_= new Test();
-	get Prop() { return this.#_Prop_; } 
-	set Prop(value) { this.#_Prop_ = value; } 
+	get Prop(){return this.#_Prop_;}
+	set Prop(value){this.#_Prop_ = value;}
 	
 	constructor()
 	{
@@ -1225,8 +1205,8 @@ class Test extends Base
 class Main extends Base
 {
 	#_Prop_= new Test();
-	get Prop() { return this.#_Prop_; } 
-	set Prop(value) { this.#_Prop_ = value; } 
+	get Prop(){return this.#_Prop_;}
+	set Prop(value){this.#_Prop_ = value;}
 	
 	constructor()
 	{
@@ -1450,8 +1430,8 @@ public class Main : Test
 class Base
 {
 	#_Prop_= 0;
-	get Prop() { return this.#_Prop_; } 
-	set Prop(value) { this.#_Prop_ = value; } 
+	get Prop(){return this.#_Prop_;}
+	set Prop(value){this.#_Prop_ = value;}
 }
 class Test extends Base
 {
@@ -1623,8 +1603,8 @@ class Test extends Base
 class Main extends Base
 {
 	#_F_= new Array();
-	get F() { return this.#_F_; } 
-	set F(value) { this.#_F_ = value; } 
+	get F(){return this.#_F_;}
+	set F(value){this.#_F_ = value;}
 		
 	constructor()
 	{
@@ -1677,8 +1657,8 @@ class Test extends Base
 class Main extends Base
 {
 	#_F_= new Array();
-	get F() { return this.#_F_; } 
-	set F(value) { this.#_F_ = value; } 
+	get F(){return this.#_F_;}
+	set F(value){this.#_F_ = value;}
 	
 	constructor()
 	{
@@ -1722,8 +1702,7 @@ public class Main
 class Main
 {
 	_P = globalThis.window.document.body.querySelector(""#temp"");
-	get P()
-{ return this._P; }
+	get P() { return this._P; }
 	set P(value)
 		{
 			this._P = value;
@@ -1772,8 +1751,7 @@ public class Main
 class Main
 {
 	_P = globalThis.window.document.body.querySelector(""#temp"");
-	get P()
-{ return this._P; }
+	get P() { return this._P; }
 	set P(value)
 		{
 			this._P = value;
@@ -1788,6 +1766,187 @@ class Main
 }", file.TranslatedStr);
 	}
 
+	[Fact]
+	public void Test_StaticConstructor()
+	{
+		FileData file = new()
+		{
+			SourceStr = @"namespace n;
+class C
+{
+	static C() {}
+}"
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(@"class C
+{
+	static {}
+}", file.TranslatedStr);
+	}
+	[Fact]
+	public void Test_StaticProperty()
+	{
+		FileData file = new()
+		{
+			SourceStr = @"namespace n;
+class C
+{
+	public static int P {get;set;} = 0;
+}"
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(@"class C
+{
+	static #_P_= 0;
+	static get P(){return this.#_P_;}
+	static set P(value){this.#_P_ = value;}
+}", file.TranslatedStr);
+	}
+	[Theory]
+	[InlineData(@"enum E1{A,B,C}", @"const E1 = {A : 0,B : 1,C : 2};")]
+	[InlineData(@"enum E2{A = 1,B = 2,C = 3}", @"const E2 = {A : 1,B : 2,C : 3};")]
+	public void Test_Enum(string source, string expected)
+	{
+		FileData file = new()
+		{
+			SourceStr = source
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(expected, file.TranslatedStr);
+	}
+	[Theory]
+	[InlineData(@"var a = new {};", @"let a = {};")]
+	[InlineData(@"var a = new { A= ""str"", B = 1 };", @"let a = { A: ""str"", B : 1 };")]
+	public void Test_AnonymousType(string source, string expected)
+	{
+		FileData file = new()
+		{
+			SourceStr = source
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(expected, file.TranslatedStr);
+	}
+	[Theory]
+	[InlineData(@"public class B{ public B() {} }
+	public class C : B 
+	{
+		public C(): base(){}
+	}",
+	@"class B{ constructor() {} }
+	class C extends B 
+	{
+		constructor(){super();}
+	}")]
+	[InlineData(@"public class B{ public B(int i) {} }
+	public class C : B 
+	{
+		public C(int i): base(i){}
+	}",
+	@"class B{ constructor(i) {} }
+	class C extends B 
+	{
+		constructor(i){super(i);}
+	}")]
+	public void Test_BaseConstructor(string source, string expected)
+	{
+		FileData file = new()
+		{
+			SourceStr = source
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(expected, file.TranslatedStr);
+	}
+	[Fact]
+	public void Test_StringEmpty()
+	{
+		FileData file = new()
+		{
+			SourceStr = @"namespace n;
+class C
+{
+	public static string P {get;set;} = string.Empty;
+	public string _F = string.Empty;
+	public C()
+	{
+		var l = string.Empty;
+	}
+}"
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(@"class C
+{
+	static #_P_= String.raw``;
+	static get P(){return this.#_P_;}
+	static set P(value){this.#_P_ = value;}
+	_F = String.raw``;
+	constructor()
+	{
+		let l = String.raw``;
+	}
+}", file.TranslatedStr);
+	}
+	[Fact]
+	public void Test_AsyncMethod()
+	{
+		FileData file = new()
+		{
+			SourceStr = @"namespace Test_AsyncMethod;
+public class C
+{
+	public async void M1(){}
+	public static async void M2(){}
+}"
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(@"class C
+{
+	async M1(){}
+	static async M2(){}
+}", file.TranslatedStr);
+	}
+	[Fact]
+	public void Test_CastThis()
+	{
+		FileData file = new()
+		{
+			SourceStr = @"using CSharpToJavaScript.APIs.JS;
+using CSharpToJavaScript.APIs.JS.Ecma;
+using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
+
+namespace Test_CastThis;
+
+public class C
+{
+	public Node P { get; set; }
+
+	public virtual void DeleteNode()
+	{
+		((ChildNode)P).Remove();
+	}
+}"
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(@"
+class C
+{
+	#_P_;
+	get P(){return this.#_P_;}
+	set P(value){this.#_P_ = value;}
+
+	DeleteNode()
+	{
+		this.P.remove();
+	}
+}", file.TranslatedStr);
+	}
 	private void ConsoleOutPut(object? obj)
 	{
 		_ConsoleStr = obj?.ToString() ?? "null";
