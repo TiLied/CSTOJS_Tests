@@ -1947,6 +1947,29 @@ class C
 	}
 }", file.TranslatedStr);
 	}
+
+	//TODO!
+	//More tests and move it to a separate file, "UnitTest_Loops" or something!
+	[Fact]
+	public void Test_Foreach()
+	{
+		FileData file = new()
+		{
+			SourceStr = @"var l = new List<int>();
+			l.Add(1);
+			l.Add(2);
+			l.Add(3);
+			foreach(var i in l){Console.Write(i);}"
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(@"let l = new Array();
+			l.push(1);
+			l.push(2);
+			l.push(3);
+			for(var i of l){console.log(i);}", file.TranslatedStr);
+	}
+	
 	private void ConsoleOutPut(object? obj)
 	{
 		_ConsoleStr = obj?.ToString() ?? "null";
