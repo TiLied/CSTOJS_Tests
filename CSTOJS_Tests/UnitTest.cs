@@ -1743,7 +1743,7 @@ public class Main
 }",
 			//TODO!
 			//error CS0019: Operator '==' cannot be applied to operands of type 'HTMLTemplateElement' and 'GlobalObject.Undefined'
-			OptionsForFile = new() { DisableCompilationErrors = true }
+			OptionsForFile = new() { DisableDiagnostics = true }
 		};
 		file = CSTOJS.Translate(file);
 

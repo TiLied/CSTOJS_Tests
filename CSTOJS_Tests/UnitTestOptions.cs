@@ -108,7 +108,7 @@ return 0;
 
 			Assert.Equal("console.log();", files[0].TranslatedStr);
 		}
-		
+
 		//TODO! more tests!
 		//TODO! better formating!
 		[Fact]
@@ -147,6 +147,27 @@ Object.defineProperty(this, 'Prop', { enumerable: true, get: function() { return
 		console.log(this.Prop);
 	}
 }", files[0].TranslatedStr);
+		}
+		
+		//TODO! more!
+		[Fact]
+		public void Test_EnableModules()
+		{
+			FileData file = new()
+			{
+				OptionsForFile = new()
+				{
+					EnableModules = 2
+				},
+				SourceStr = @"namespace Test_EnableModules;
+public class C{}"
+			};
+
+			FileData[] files = CSTOJS.Translate([file]);
+
+			Assert.Equal(@"class C{}
+export { C };
+", files[0].TranslatedStr);
 		}
 	}
 }
