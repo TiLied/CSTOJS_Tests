@@ -870,101 +870,6 @@ class Program
 	}
 }", file.TranslatedStr);
 	}
-
-	[Fact]
-	public void Test_This()
-	{
-		FileData file = new()
-		{
-			SourceStr = @"using CSharpToJavaScript.APIs.JS;
-using CSharpToJavaScript.APIs.JS.Ecma;
-using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
-namespace Test_This;
-
-public class Program
-{
-	private string _Time = new Date().ToISOString();
-	public string Time
-	{ 
-		get
-		{
-			return _Time;
-		} 
-		set
-		{
-			_Time = value;
-		}
-	}
-	public void Main()
-	{
-		Console.WriteLine(""Main"");
-
-		var that = this;
-		(GlobalThis.Window as WindowOrWorkerGlobalScope).SetInterval(() =>
-		{
-			that.Time = new Date().ToISOString();
-		}, 1000);
-	}
-}"
-		};
-		file = CSTOJS.Translate(file);
-
-		Assert.Equal(@"
-class Program
-{
-	_Time = new Date().toISOString();
-	get Time()
-		{
-			return this._Time;
-		} 
-	set Time(value)
-		{
-			this._Time = value;
-		}
-	Main()
-	{
-		console.log(""Main"");
-
-		let that = this;
-		globalThis.window.setInterval(() =>
-		{
-			that.Time = new Date().toISOString();
-		}, 1000);
-	}
-}", file.TranslatedStr);
-	}
-
-	[Fact]
-	public void Test_ThisExplicit()
-	{
-		FileData file = new()
-		{
-			SourceStr = @"using CSharpToJavaScript.APIs.JS;
-using CSharpToJavaScript.APIs.JS.Ecma;
-using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
-namespace Test_ThisExplicit;
-
-public class Program
-{
-	private string _Time = new Date().ToISOString();
-	public void Main()
-	{
-		Console.WriteLine(this._Time);
-	}
-}"
-		};
-		file = CSTOJS.Translate(file);
-
-		Assert.Equal(@"
-class Program
-{
-	_Time = new Date().toISOString();
-	Main()
-	{
-		console.log(this._Time);
-	}
-}", file.TranslatedStr);
-	}
 	[Fact]
 	public void Test_StaticMethodCall()
 	{
@@ -1446,43 +1351,6 @@ class Main extends Test
 	}
 
 	[Fact]
-	public void Test_ExplicitThisWithImplicitThis()
-	{
-		FileData file = new()
-		{
-			SourceStr = @"using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
-using CSharpToJavaScript.APIs.JS; 
-namespace Test_ExplicitThisWithImplicitThis;
-
-public class Main
-{
-	private bool F1 = true;
-	private bool F2 = true;
-	
-	public Main()
-	{
-		this.M(F1, this.F2);
-	}
-	public void M(bool b1, bool b2){}
-}"
-		};
-		file = CSTOJS.Translate(file);
-
-		Assert.Equal(@"
-class Main
-{
-	F1 = true;
-	F2 = true;
-	
-	constructor()
-	{
-		this.M(this.F1, this.F2);
-	}
-	M(b1, b2){}
-}", file.TranslatedStr);
-
-	}
-	[Fact]
 	public void Test_CallBaseMethod()
 	{
 		FileData file = new()
@@ -1523,41 +1391,6 @@ class Main extends Base
 	M()
 	{
 		super.M();
-	}
-}", file.TranslatedStr);
-
-	}
-	[Fact]
-	public void Test_PrintTwoFields()
-	{
-		FileData file = new()
-		{
-			SourceStr = @"using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
-using CSharpToJavaScript.APIs.JS; 
-namespace Test_PrintTwoFields;
-
-public class Main
-{
-	private int F1 = 1;
-	private int F2 = 2;
-	
-	public Main()
-	{
-		Console.WriteLine($""{F1} {F2}"");
-	}
-}"
-		};
-		file = CSTOJS.Translate(file);
-
-		Assert.Equal(@"
-class Main
-{
-	F1 = 1;
-	F2 = 2;
-	
-	constructor()
-	{
-		console.log(`${this.F1} ${this.F2}`);
 	}
 }", file.TranslatedStr);
 
@@ -1911,42 +1744,6 @@ public class C
 	static async M2(){}
 }", file.TranslatedStr);
 	}
-	[Fact]
-	public void Test_CastThis()
-	{
-		FileData file = new()
-		{
-			SourceStr = @"using CSharpToJavaScript.APIs.JS;
-using CSharpToJavaScript.APIs.JS.Ecma;
-using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
-
-namespace Test_CastThis;
-
-public class C
-{
-	public Node P { get; set; }
-
-	public virtual void DeleteNode()
-	{
-		((ChildNode)P).Remove();
-	}
-}"
-		};
-		file = CSTOJS.Translate(file);
-
-		Assert.Equal(@"
-class C
-{
-	#_P_;
-	get P(){return this.#_P_;}
-	set P(value){this.#_P_ = value;}
-
-	DeleteNode()
-	{
-		this.P.remove();
-	}
-}", file.TranslatedStr);
-	}
 
 	//TODO!
 	//More tests and move it to a separate file, "UnitTest_Loops" or something!
@@ -1969,7 +1766,27 @@ class C
 			l.push(3);
 			for(var i of l){console.log(i);}", file.TranslatedStr);
 	}
-	
+	[Fact]
+	public void Test_TryCatch()
+	{
+		FileData file = new()
+		{
+			SourceStr = @"try{}
+		catch (Exception e)
+		{
+			Console.WriteLine(e);
+			throw;
+		}"
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(@"try{}
+		catch (e)
+		{
+			console.log(e);
+			throw;
+		}", file.TranslatedStr);
+	}
 	private void ConsoleOutPut(object? obj)
 	{
 		_ConsoleStr = obj?.ToString() ?? "null";

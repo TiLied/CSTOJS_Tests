@@ -155,6 +155,7 @@ Object.defineProperty(this, 'Prop', { enumerable: true, get: function() { return
 		{
 			FileData file = new()
 			{
+				FileName = "f1.js",
 				OptionsForFile = new()
 				{
 					EnableModules = 2
@@ -162,12 +163,24 @@ Object.defineProperty(this, 'Prop', { enumerable: true, get: function() { return
 				SourceStr = @"namespace Test_EnableModules;
 public class C{}"
 			};
+			FileData file2 = new()
+			{
+				FileName = "f2.js",
+				OptionsForFile = new()
+				{
+					EnableModules = 2
+				},
+				SourceStr = @"namespace Test_EnableModules;
+public class C2{ public C2(){ var l = new C(); } }"
+			};
 
-			FileData[] files = CSTOJS.Translate([file]);
+			FileData[] files = CSTOJS.Translate([file, file2]);
 
 			Assert.Equal(@"class C{}
-export { C };
-", files[0].TranslatedStr);
+export { C };", files[0].TranslatedStr);
+			Assert.Equal(@"import { C } from './f1.js';
+class C2{ constructor(){ let l = new C(); } }
+export { C2 };", files[1].TranslatedStr);
 		}
 	}
 }
