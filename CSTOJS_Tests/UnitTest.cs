@@ -1640,6 +1640,13 @@ class C
 	[Theory]
 	[InlineData(@"enum E1{A,B,C}", @"const E1 = {A : 0,B : 1,C : 2};")]
 	[InlineData(@"enum E2{A = 1,B = 2,C = 3}", @"const E2 = {A : 1,B : 2,C : 3};")]
+	[InlineData(@"namespace N;
+public enum E2{A = 1,B = 2,C = 3}", @"const E2 = {A : 1,B : 2,C : 3};")]
+	[InlineData(@"namespace N
+	{
+		public enum E2{A = 1,B = 2,C = 3}
+	}", @"const E2 = {A : 1,B : 2,C : 3};
+")]
 	public void Test_Enum(string source, string expected)
 	{
 		FileData file = new()
