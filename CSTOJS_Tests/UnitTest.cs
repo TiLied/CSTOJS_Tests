@@ -1794,6 +1794,26 @@ public class C
 			throw;
 		}", file.TranslatedStr);
 	}
+	[Theory]
+	[InlineData(@"namespace N;
+	public enum E{A,B}
+	class C{C(){Console.WriteLine(nameof(E));}}", @"const E = {A : 0,B : 1};
+	class C{constructor(){console.log(""E"");}}")]
+	[InlineData(@"namespace N;
+	public enum E{A,B}
+	class C{C(){Console.WriteLine(nameof(E.A));}}", @"const E = {A : 0,B : 1};
+	class C{constructor(){console.log(""A"");}}")]
+	public void Test_NameOfExpression(string cs, string expected)
+	{
+		FileData file = new()
+		{
+			SourceStr = cs
+		};
+		
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(expected, file.TranslatedStr);
+	}
 	private void ConsoleOutPut(object? obj)
 	{
 		_ConsoleStr = obj?.ToString() ?? "null";

@@ -1,10 +1,16 @@
 using CSharpToJavaScript;
-using System;
+using System.Globalization;
+using System.Threading;
 
 namespace CSTOJS_Tests.ECMA;
 
 public class UnitTest_Attributes
 {
+	public UnitTest_Attributes()
+	{
+		Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+		Thread.CurrentThread.CurrentUICulture = Thread.CurrentThread.CurrentCulture;
+	}
 	[Theory]
 	[InlineData("Element e = (GlobalThis.Window.Document as ParentNode).QuerySelector(\"test\");")]
 	[InlineData("HTMLElement e = (GlobalThis.Window.Document as ParentNode).QuerySelector<HTMLElement>(\"test\");")]
