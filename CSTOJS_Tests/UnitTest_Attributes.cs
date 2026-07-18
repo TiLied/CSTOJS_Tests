@@ -204,4 +204,32 @@ class TestClass
 	}
 }", file.TranslatedStr);
 	}
+	
+	[Theory]
+	[InlineData(@"using CSharpToJavaScript.Utils; class C { [Ignore]void M(){} }",
+				@"class C { }")]
+	public void Test_IgnoreAttribute(string cs, string expected)
+	{
+		FileData file = new()
+		{
+			SourceStr = cs
+		};
+		file = CSTOJS.Translate(file);
+		
+		Assert.Equal(expected, file.TranslatedStr);
+	}
+	[Theory]
+	[InlineData(@"using CSharpToJavaScript.Utils; [Import(""test2"",""./test.js"")]class C { [Import(""test"",""./test.js"")][Ignore][Value(""test"")]void M(){} C(){ M(); } }",
+				@"import { test2, test } from './test.js';
+class C { constructor(){ test(); } }")]
+	public void Test_ImportAttribute(string cs, string expected)
+	{
+		FileData file = new()
+		{
+			SourceStr = cs
+		};
+		file = CSTOJS.Translate(file);
+		
+		Assert.Equal(expected, file.TranslatedStr);
+	}
 }

@@ -187,5 +187,21 @@ export { C };", files[0].TranslatedStr);
 class C2{ constructor(){ let l = new C(); } }
 export { C2 };", files[1].TranslatedStr);
 	}
+	
+	[Theory]
+	[InlineData(true, @"let a =""push"";")]
+	[InlineData(false, @"let a =""Add"";")]
+	public void Test_ProcessNameOfExpression(bool opt, string expected)
+	{
+		FileData file = new()
+		{
+			SourceStr = @"var a =nameof(System.Collections.Generic.List<int>.Add);",
+			OptionsForFile = new(){ ProcessNameOfExpression = opt }
+		};
+		
+		FileData[] files = CSTOJS.Translate([file,]);
+		
+		Assert.Equal(expected, files[0].TranslatedStr);
+	}
 }
 

@@ -81,7 +81,35 @@ public class UnitTest
 				{
 					[ nameof(TestDefaultParameterInMethod)] = "error CS1736: Default parameter value for 'value' must be a compile-time constant"
 				}
-			})
+			}),
+			new (new("List<int>", "new()", "System.Object[]")
+			{
+				SkipMethods = new()
+				{
+					[ nameof(TestDefaultParameterInMethod)] = "error CS1736: Default parameter value for 'value' must be a compile-time constant"
+				}
+			}),
+			new (new("List<int>", "new List<int>()", "System.Object[]")
+			{
+				SkipMethods = new()
+				{
+					[ nameof(TestDefaultParameterInMethod)] = "error CS1736: Default parameter value for 'value' must be a compile-time constant"
+				}
+			}),
+			new (new("List<CustomClass>", "new()", "System.Object[]")
+			{
+				SkipMethods = new()
+				{
+					[ nameof(TestDefaultParameterInMethod)] = "error CS1736: Default parameter value for 'value' must be a compile-time constant"
+				}
+			}),
+			new (new("List<CustomClass>", "new List<CustomClass>()", "System.Object[]")
+			{
+				SkipMethods = new()
+				{
+					[ nameof(TestDefaultParameterInMethod)] = "error CS1736: Default parameter value for 'value' must be a compile-time constant"
+				}
+			}),
 	];
 	public static TheoryDataRow<TestData>[] TestData_Numbers =
 	[
@@ -209,6 +237,8 @@ using Microsoft.CodeAnalysis;
 
 using System;
 using System.Threading.Tasks;
+
+
 using Jint;
 
 using System.Text;
@@ -257,6 +287,8 @@ using Microsoft.CodeAnalysis;
 
 using System;
 using System.Threading.Tasks;
+
+
 using Jint;
 
 using System.Text;
@@ -292,6 +324,7 @@ using Microsoft.CodeAnalysis;
 
 using System;
 using System.Threading.Tasks;
+
 using Jint;
 
 using System.Text;
@@ -327,6 +360,7 @@ using Microsoft.CodeAnalysis;
 
 using System;
 using System.Threading.Tasks;
+
 using Jint;
 
 using System.Text;
@@ -369,6 +403,7 @@ using Microsoft.CodeAnalysis;
 
 using System;
 using System.Threading.Tasks;
+
 using Jint;
 
 using System.Text;
@@ -419,6 +454,7 @@ using Microsoft.CodeAnalysis;
 
 using System;
 using System.Threading.Tasks;
+
 using Jint;
 
 using System.Text;
@@ -468,6 +504,7 @@ namespace CSTOJS_Test.CSharp
 using CSharpToJavaScript;
 using Microsoft.CodeAnalysis;
 
+
 using System.Text;
 using Boolean = CSharpToJavaScript.APIs.JS.Ecma.Boolean;
 namespace CSTOJS_Test.CSharp
@@ -513,6 +550,7 @@ namespace CSTOJS_Test.CSharp
 			SourceStr = $@"
 using CSharpToJavaScript;
 using Microsoft.CodeAnalysis;
+
 
 using System.Text;
 using Boolean = CSharpToJavaScript.APIs.JS.Ecma.Boolean;
@@ -563,6 +601,7 @@ namespace CSTOJS_Test.CSharp
 using CSharpToJavaScript;
 using Microsoft.CodeAnalysis;
 
+
 using System.Text;
 using Boolean = CSharpToJavaScript.APIs.JS.Ecma.Boolean;
 namespace CSTOJS_Test.CSharp
@@ -610,6 +649,7 @@ namespace CSTOJS_Test.CSharp
 			OptionsForFile = _DefaultUnitOpt,
 			SourceStr = $@"using CSharpToJavaScript;
 using Microsoft.CodeAnalysis;
+
 
 using System.Text;
 using Boolean = CSharpToJavaScript.APIs.JS.Ecma.Boolean;
@@ -1813,6 +1853,17 @@ public class C
 		file = CSTOJS.Translate(file);
 
 		Assert.Equal(expected, file.TranslatedStr);
+	}
+	[Fact]
+	public void Test_IgnoreExplicitNamespaces()
+	{
+		FileData file = new()
+		{
+			SourceStr = @"var a = new System.Collections.Generic.List<int>();"
+		};
+		file = CSTOJS.Translate(file);
+		
+		Assert.Equal(@"let a = new Array();", file.TranslatedStr);
 	}
 	private void ConsoleOutPut(object? obj)
 	{
