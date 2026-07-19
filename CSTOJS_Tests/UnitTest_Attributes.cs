@@ -208,6 +208,10 @@ class TestClass
 	[Theory]
 	[InlineData(@"using CSharpToJavaScript.Utils; class C { [Ignore]void M(){} }",
 				@"class C { }")]
+	[InlineData(@"using CSharpToJavaScript.Utils; class C { [Ignore]int I = 0; }",
+				@"class C { }")]
+	[InlineData(@"using CSharpToJavaScript.Utils; [Ignore]class C { int I = 0; }",
+				@"")]
 	public void Test_IgnoreAttribute(string cs, string expected)
 	{
 		FileData file = new()

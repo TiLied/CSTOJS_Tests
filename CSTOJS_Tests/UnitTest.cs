@@ -1865,6 +1865,37 @@ public class C
 		
 		Assert.Equal(@"let a = new Array();", file.TranslatedStr);
 	}
+	
+	[Theory]
+	//sbyte
+	[InlineData(@"var a = sbyte.MinValue;", @"let a = Number.parseInt(""-128"");")]
+	[InlineData(@"var a = sbyte.MaxValue;", @"let a = Number.parseInt(""127"");")]
+	//byte
+	[InlineData(@"var a = byte.MinValue;", @"let a = Number.parseInt(""0"");")]
+	[InlineData(@"var a = byte.MaxValue;", @"let a = Number.parseInt(""255"");")]
+	//short
+	[InlineData(@"var a = short.MinValue;", @"let a = Number.parseInt(""-32768"");")]
+	[InlineData(@"var a = short.MaxValue;", @"let a = Number.parseInt(""32767"");")]
+	//ushort
+	[InlineData(@"var a = ushort.MinValue;", @"let a = Number.parseInt(""0"");")]
+	[InlineData(@"var a = ushort.MaxValue;", @"let a = Number.parseInt(""65535"");")]
+	//int
+	[InlineData(@"var a = int.MinValue;", @"let a = Number.parseInt(""-2147483648"");")]
+	[InlineData(@"var a = int.MaxValue;", @"let a = Number.parseInt(""2147483647"");")]
+	//uint
+	[InlineData(@"var a = uint.MinValue;", @"let a = Number.parseInt(""0"");")]
+	[InlineData(@"var a = uint.MaxValue;", @"let a = Number.parseInt(""4294967295"");")]
+	public void Test_NumberMinMax(string cs, string expected)
+	{
+		FileData file = new()
+		{
+			SourceStr = cs
+		};
+		
+		file = CSTOJS.Translate(file);
+		
+		Assert.Equal(expected, file.TranslatedStr);
+	}
 	private void ConsoleOutPut(object? obj)
 	{
 		_ConsoleStr = obj?.ToString() ?? "null";
