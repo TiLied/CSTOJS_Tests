@@ -222,7 +222,7 @@ public class UnitTest
 		Thread.CurrentThread.CurrentCulture = info;
 		Thread.CurrentThread.CurrentUICulture = Thread.CurrentThread.CurrentCulture;
 
-		_Engine.SetValue("log", new Action<object>(ConsoleOutPut));
+		_Engine.SetValue("log", new Action<object>(ConsoleOutput));
 	}
 
 	[Fact]
@@ -1795,7 +1795,7 @@ public class C
 	//TODO!
 	//More tests and move it to a separate file, "UnitTest_Loops" or something!
 	[Fact]
-	public void Test_Foreach()
+	public void Test_ForEach()
 	{
 		FileData file = new()
 		{
@@ -1811,8 +1811,9 @@ public class C
 			l.push(1);
 			l.push(2);
 			l.push(3);
-			for(var i of l){console.log(i);}", file.TranslatedStr);
+			for(let i of l){console.log(i);}", file.TranslatedStr);
 	}
+	
 	[Fact]
 	public void Test_TryCatch()
 	{
@@ -1866,6 +1867,20 @@ public class C
 		Assert.Equal(@"let a = new Array();", file.TranslatedStr);
 	}
 	
+	//Testing only c# since namespaces are ignored.
+	[Fact]
+	public void Test_NamespaceDeclToFileNamespaseDecl()
+	{
+		FileData file = new()
+		{
+			OptionsForFile = new(){ Debug = true },
+			SourceStr = @"namespace N{namespace N2{}}"
+		};
+		file = CSTOJS.Translate(file);
+		
+		Assert.Equal(@"namespace N;namespace N2;", file.DebugStrings[1]);
+	}
+	
 	[Theory]
 	//sbyte
 	[InlineData(@"var a = sbyte.MinValue;", @"let a = Number.parseInt(""-128"");")]
@@ -1896,7 +1911,20 @@ public class C
 		
 		Assert.Equal(expected, file.TranslatedStr);
 	}
-	private void ConsoleOutPut(object? obj)
+	
+	[Fact]
+	public void Test_Const()
+	{
+		FileData file = new()
+		{
+			SourceStr = @"const int I = 5;"
+		};
+		file = CSTOJS.Translate(file);
+		
+		Assert.Equal(@"const I = 5;", file.TranslatedStr);
+	}
+	
+	private void ConsoleOutput(object? obj)
 	{
 		_ConsoleStr = obj?.ToString() ?? "null";
 	}
