@@ -189,17 +189,32 @@ export { C2 };", files[1].TranslatedStr);
 	}
 	
 	[Theory]
-	[InlineData(true, @"let a =""push"";")]
-	[InlineData(false, @"let a =""Add"";")]
-	public void Test_ProcessNameOfExpression(bool opt, string expected)
+	[InlineData(false, @"let a =""push"";")]
+	[InlineData(true, @"let a =""Add"";")]
+	public void Test_DisableNameOfProcessing(bool opt, string expected)
 	{
 		FileData file = new()
 		{
 			SourceStr = @"var a =nameof(System.Collections.Generic.List<int>.Add);",
-			OptionsForFile = new(){ ProcessNameOfExpression = opt }
+			OptionsForFile = new(){ DisableNameOfProcessing = opt }
 		};
 		
-		FileData[] files = CSTOJS.Translate([file,]);
+		FileData[] files = CSTOJS.Translate([file]);
+		
+		Assert.Equal(expected, files[0].TranslatedStr);
+	}
+	[Theory]
+	[InlineData(false, @"console.log("""");")]
+	[InlineData(true, @"")]
+	public void Test_DisableTranslation(bool opt, string expected)
+	{
+		FileData file = new()
+		{
+			SourceStr = @"Console.WriteLine("""");",
+			OptionsForFile = new(){ DisableTranslation = opt }
+		};
+		
+		FileData[] files = CSTOJS.Translate([file]);
 		
 		Assert.Equal(expected, files[0].TranslatedStr);
 	}

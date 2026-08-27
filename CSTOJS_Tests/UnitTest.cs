@@ -1869,7 +1869,7 @@ public class C
 	
 	//Testing only c# since namespaces are ignored.
 	[Fact]
-	public void Test_NamespaceDeclToFileNamespaseDecl()
+	public void Test_NamespaceDeclToFileNamespaceDecl()
 	{
 		FileData file = new()
 		{
