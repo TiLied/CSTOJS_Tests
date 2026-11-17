@@ -703,7 +703,7 @@ public class CustomClass
 	//Comparison operators 
 	[InlineData("a == a", "True")]
 	[InlineData("a != a", "False")]
-	//'===' and '!==' Done in "UnitTestOptions".
+	//'===' and '!==' Done, as methods see: GlobalObject.
 	[InlineData("a > a", "False")]
 	[InlineData("a >= a", "True")]
 	[InlineData("a < a", "False")]
@@ -786,6 +786,10 @@ Unsupported unsupported = ""str"";"
 		file = CSTOJS.Translate(file);
 
 		Assert.Equal($@"let unsupported = ""str"";", file.TranslatedStr);
+		
+		_Engine.Execute(PrepareStringForExecution(file.TranslatedStr, "unsupported"));
+
+		Assert.Equal("str", _ConsoleStr);
 	}
 	[Fact]
 	public void Test_ImplicitOperatorFrom()
@@ -1033,6 +1037,10 @@ class Program
 		file = CSTOJS.Translate(file);
 
 		Assert.Equal(@"let a = new Array(1,2,3);", file.TranslatedStr);
+
+		_Engine.Execute(PrepareStringForExecution(file.TranslatedStr, "a[1]"));
+
+		Assert.Equal("2", _ConsoleStr);
 	}
 
 	[Fact]
@@ -1676,18 +1684,22 @@ class C
 	static get P(){return this.#_P_;}
 	static set P(value){this.#_P_ = value;}
 }", file.TranslatedStr);
+
+		_Engine.Execute(PrepareStringForExecution(file.TranslatedStr, "C.P"));
+
+		Assert.Equal("0", _ConsoleStr);
 	}
 	[Theory]
-	[InlineData(@"enum E1{A,B,C}", @"const E1 = {A : 0,B : 1,C : 2};")]
-	[InlineData(@"enum E2{A = 1,B = 2,C = 3}", @"const E2 = {A : 1,B : 2,C : 3};")]
+	[InlineData(@"enum E1{A,B,C}", @"const E1 = {A : 0,B : 1,C : 2};", "E1.A", "0")]
+	[InlineData(@"enum E2{A = 1,B = 2,C = 3}", @"const E2 = {A : 1,B : 2,C : 3};", "E2.A", "1")]
 	[InlineData(@"namespace N;
-public enum E2{A = 1,B = 2,C = 3}", @"const E2 = {A : 1,B : 2,C : 3};")]
+public enum E2{A = 1,B = 2,C = 3}", @"const E2 = {A : 1,B : 2,C : 3};", "E2.A", "1")]
 	[InlineData(@"namespace N
 	{
 		public enum E2{A = 1,B = 2,C = 3}
 	}", @"const E2 = {A : 1,B : 2,C : 3};
-")]
-	public void Test_Enum(string source, string expected)
+", "E2.A", "1")]
+	public void Test_Enum(string source, string expected, string executeStr, string expectedResult)
 	{
 		FileData file = new()
 		{
@@ -1696,11 +1708,15 @@ public enum E2{A = 1,B = 2,C = 3}", @"const E2 = {A : 1,B : 2,C : 3};")]
 		file = CSTOJS.Translate(file);
 
 		Assert.Equal(expected, file.TranslatedStr);
+		
+		_Engine.Execute(PrepareStringForExecution(file.TranslatedStr, executeStr));
+
+		Assert.Equal(expectedResult, _ConsoleStr);
 	}
 	[Theory]
-	[InlineData(@"var a = new {};", @"let a = {};")]
-	[InlineData(@"var a = new { A= ""str"", B = 1 };", @"let a = { A: ""str"", B : 1 };")]
-	public void Test_AnonymousType(string source, string expected)
+	[InlineData(@"var a = new {};", @"let a = {};", "a", "System.Dynamic.ExpandoObject")]
+	[InlineData(@"var a = new { A = ""str"", B = 1 };", @"let a = { A : ""str"", B : 1 };", "a", "System.Dynamic.ExpandoObject")]
+	public void Test_AnonymousType(string source, string expected, string executeStr, string expectedResult)
 	{
 		FileData file = new()
 		{
@@ -1709,6 +1725,10 @@ public enum E2{A = 1,B = 2,C = 3}", @"const E2 = {A : 1,B : 2,C : 3};")]
 		file = CSTOJS.Translate(file);
 
 		Assert.Equal(expected, file.TranslatedStr);
+		
+		_Engine.Execute(PrepareStringForExecution(file.TranslatedStr, executeStr));
+
+		Assert.Equal(expectedResult, _ConsoleStr);
 	}
 	[Theory]
 	[InlineData(@"public class B{ public B() {} }
@@ -1770,6 +1790,10 @@ class C
 		let l = String.raw``;
 	}
 }", file.TranslatedStr);
+
+		_Engine.Execute(PrepareStringForExecution(file.TranslatedStr, "new C()"));
+
+		Assert.Equal("System.Dynamic.ExpandoObject", _ConsoleStr);
 	}
 	[Fact]
 	public void Test_AsyncMethod()
@@ -1812,6 +1836,10 @@ public class C
 			l.push(2);
 			l.push(3);
 			for(let i of l){console.log(i);}", file.TranslatedStr);
+
+		_Engine.Execute(PrepareStringForExecution(file.TranslatedStr, "l[1]"));
+
+		Assert.Equal("2", _ConsoleStr);
 	}
 	
 	[Fact]
@@ -1839,12 +1867,12 @@ public class C
 	[InlineData(@"namespace N;
 	public enum E{A,B}
 	class C{C(){Console.WriteLine(nameof(E));}}", @"const E = {A : 0,B : 1};
-	class C{constructor(){console.log(""E"");}}")]
+	class C{constructor(){console.log(""E"");}}", "new C()", "System.Dynamic.ExpandoObject")]
 	[InlineData(@"namespace N;
 	public enum E{A,B}
 	class C{C(){Console.WriteLine(nameof(E.A));}}", @"const E = {A : 0,B : 1};
-	class C{constructor(){console.log(""A"");}}")]
-	public void Test_NameOfExpression(string cs, string expected)
+	class C{constructor(){console.log(""A"");}}","new C()", "System.Dynamic.ExpandoObject")]
+	public void Test_NameOfExpression(string cs, string expected, string executeStr, string expectedResult)
 	{
 		FileData file = new()
 		{
@@ -1854,6 +1882,10 @@ public class C
 		file = CSTOJS.Translate(file);
 
 		Assert.Equal(expected, file.TranslatedStr);
+
+		_Engine.Execute(PrepareStringForExecution(file.TranslatedStr, executeStr));
+
+		Assert.Equal(expectedResult, _ConsoleStr);
 	}
 	[Fact]
 	public void Test_IgnoreExplicitNamespaces()
@@ -1863,8 +1895,12 @@ public class C
 			SourceStr = @"var a = new System.Collections.Generic.List<int>();"
 		};
 		file = CSTOJS.Translate(file);
-		
+
 		Assert.Equal(@"let a = new Array();", file.TranslatedStr);
+		
+		_Engine.Execute(PrepareStringForExecution(file.TranslatedStr, "a"));
+
+		Assert.Equal("System.Object[]", _ConsoleStr);
 	}
 	
 	//Testing only c# since namespaces are ignored.
@@ -1883,24 +1919,24 @@ public class C
 	
 	[Theory]
 	//sbyte
-	[InlineData(@"var a = sbyte.MinValue;", @"let a = Number.parseInt(""-128"");")]
-	[InlineData(@"var a = sbyte.MaxValue;", @"let a = Number.parseInt(""127"");")]
+	[InlineData(@"var a = sbyte.MinValue;", @"let a = Number.parseInt(""-128"");", "a", "-128")]
+	[InlineData(@"var a = sbyte.MaxValue;", @"let a = Number.parseInt(""127"");", "a", "127")]
 	//byte
-	[InlineData(@"var a = byte.MinValue;", @"let a = Number.parseInt(""0"");")]
-	[InlineData(@"var a = byte.MaxValue;", @"let a = Number.parseInt(""255"");")]
+	[InlineData(@"var a = byte.MinValue;", @"let a = Number.parseInt(""0"");", "a", "0")]
+	[InlineData(@"var a = byte.MaxValue;", @"let a = Number.parseInt(""255"");", "a", "255")]
 	//short
-	[InlineData(@"var a = short.MinValue;", @"let a = Number.parseInt(""-32768"");")]
-	[InlineData(@"var a = short.MaxValue;", @"let a = Number.parseInt(""32767"");")]
+	[InlineData(@"var a = short.MinValue;", @"let a = Number.parseInt(""-32768"");", "a", "-32768")]
+	[InlineData(@"var a = short.MaxValue;", @"let a = Number.parseInt(""32767"");", "a", "32767")]
 	//ushort
-	[InlineData(@"var a = ushort.MinValue;", @"let a = Number.parseInt(""0"");")]
-	[InlineData(@"var a = ushort.MaxValue;", @"let a = Number.parseInt(""65535"");")]
+	[InlineData(@"var a = ushort.MinValue;", @"let a = Number.parseInt(""0"");", "a", "0")]
+	[InlineData(@"var a = ushort.MaxValue;", @"let a = Number.parseInt(""65535"");", "a", "65535")]
 	//int
-	[InlineData(@"var a = int.MinValue;", @"let a = Number.parseInt(""-2147483648"");")]
-	[InlineData(@"var a = int.MaxValue;", @"let a = Number.parseInt(""2147483647"");")]
+	[InlineData(@"var a = int.MinValue;", @"let a = Number.parseInt(""-2147483648"");", "a", "-2147483648")]
+	[InlineData(@"var a = int.MaxValue;", @"let a = Number.parseInt(""2147483647"");", "a", "2147483647")]
 	//uint
-	[InlineData(@"var a = uint.MinValue;", @"let a = Number.parseInt(""0"");")]
-	[InlineData(@"var a = uint.MaxValue;", @"let a = Number.parseInt(""4294967295"");")]
-	public void Test_NumberMinMax(string cs, string expected)
+	[InlineData(@"var a = uint.MinValue;", @"let a = Number.parseInt(""0"");", "a", "0")]
+	[InlineData(@"var a = uint.MaxValue;", @"let a = Number.parseInt(""4294967295"");","a", "4294967295")]
+	public void Test_NumberMinMax(string cs, string expectedJS, string executeStr, string expectedResult)
 	{
 		FileData file = new()
 		{
@@ -1908,10 +1944,14 @@ public class C
 		};
 		
 		file = CSTOJS.Translate(file);
-		
-		Assert.Equal(expected, file.TranslatedStr);
+
+		Assert.Equal(expectedJS, file.TranslatedStr);
+
+		_Engine.Execute(PrepareStringForExecution(file.TranslatedStr, executeStr));
+
+		Assert.Equal(expectedResult, _ConsoleStr);
 	}
-	
+
 	[Fact]
 	public void Test_Const()
 	{
@@ -1920,10 +1960,119 @@ public class C
 			SourceStr = @"const int I = 5;"
 		};
 		file = CSTOJS.Translate(file);
-		
+
 		Assert.Equal(@"const I = 5;", file.TranslatedStr);
+		
+		_Engine.Execute(PrepareStringForExecution(file.TranslatedStr, "I"));
+		Assert.Equal("5", _ConsoleStr);
+	}
+
+	[Fact]
+	public void Test_MethodBodyExpression()
+	{
+		FileData file = new()
+		{
+			SourceStr = @"class C
+			{
+				public int GetZero() => 0;
+			}"
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(@"class C
+			{
+				GetZero() { return 0; }
+			}", file.TranslatedStr);
+
+		_Engine.Execute(PrepareStringForExecution(file.TranslatedStr, "new C().GetZero()"));
+		
+		Assert.Equal("0", _ConsoleStr);
+	}
+
+	[Theory]
+	[InlineData(@"+", @"Plus", "C.Test().I", "3")]
+	[InlineData(@"-", @"Minus", "C.Test().I", "-1")]
+	[InlineData(@"*", @"Asterisk", "C.Test().I", "2")]
+	[InlineData(@"/", @"Slash", "C.Test().I", "0.5")]
+	public void Test_Operators(string token, string expectedJS, string executeStr, string expectedResult)
+	{
+		FileData file = new()
+		{
+			SourceStr = @$"class C
+{{
+	public int I {{ get; set; }} = 0;
+	C(int i) {{ I = i; }}
+	
+	public static C operator {token}(C a, C b) => new C(a.I {token} b.I); 
+	
+	public static C Test()
+	{{
+		var a = new C(1);
+		var b = new C(2);
+		
+		return a {token} b;
+	}}
+}}"
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(@$"class C
+{{
+	#_I_= 0;
+	get I(){{return this.#_I_;}}
+	set I(value){{this.#_I_ = value;}}
+	constructor(i) {{ this.I = i; }}
+	
+	static Operator{expectedJS}(a, b) {{ return new C(a.I {token} b.I); }} 
+	
+	static Test()
+	{{
+		let a = new C(1);
+		let b = new C(2);
+		
+		return C.Operator{expectedJS}(a, b);
+	}}
+}}", file.TranslatedStr);
+
+		_Engine.Execute(PrepareStringForExecution(file.TranslatedStr, executeStr));
+
+		Assert.Equal(expectedResult, _ConsoleStr);
+	}
+
+	[Theory]
+	[InlineData(@"object? a = null;
+	if(a is null)
+		Console.WriteLine(a);", @"let a = null;
+	if(a === null)
+		console.log(a);", "a", "null")]
+	[InlineData(@"object? a = 1;
+	if(a is not null)
+		Console.WriteLine(a);", @"let a = 1;
+	if(a !== null)
+		console.log(a);", "a", "1")]
+	public void Test_IsExpressionNull(string cs, string expectedJS, string executeStr, string expectedResult)
+	{
+		FileData file = new()
+		{
+			SourceStr = cs
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(expectedJS, file.TranslatedStr);
+
+		_Engine.Execute(PrepareStringForExecution(file.TranslatedStr, executeStr));
+
+		Assert.Equal(expectedResult, _ConsoleStr);
 	}
 	
+	private string PrepareStringForExecution(string translatedStr, string executeStr)
+	{
+		string str = "let console = { log: log };\n";
+		str += translatedStr;
+		str += $"\nconsole.log({executeStr});";
+
+		return str;
+	}
 	private void ConsoleOutput(object? obj)
 	{
 		_ConsoleStr = obj?.ToString() ?? "null";
