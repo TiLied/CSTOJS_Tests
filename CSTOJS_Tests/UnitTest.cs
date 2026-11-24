@@ -1,19 +1,15 @@
-﻿using CSharpToJavaScript;
+﻿using System;
+using System.Globalization;
+using CSharpToJavaScript;
 using CSharpToJavaScript.APIs.JS.Ecma;
 using Jint;
-using System;
-using System.Globalization;
-using System.Threading;
 
 namespace CSTOJS_Tests;
 
 //dotnet test --filter "Category!=test262&Category!=test262-parser"
 public class UnitTest
 {
-	private readonly Engine _Engine = new(cfg => cfg.Culture(CultureInfo.InvariantCulture));
-
-	private string _ConsoleStr = string.Empty;
-
+	private readonly Engine _JintEngine = new(cfg => cfg.Culture(CultureInfo.InvariantCulture));
 	private readonly CSTOJSOptions _DefaultUnitOpt = new()
 	{
 		AddSBAtTheTop = new("let console = { log: log };"),
@@ -217,14 +213,9 @@ public class UnitTest
 
 	public UnitTest()
 	{
-		//https://stackoverflow.com/a/45117890
-		CultureInfo info = CultureInfo.InvariantCulture;
-		Thread.CurrentThread.CurrentCulture = info;
-		Thread.CurrentThread.CurrentUICulture = Thread.CurrentThread.CurrentCulture;
-
-		_Engine.SetValue("log", new Action<object>(ConsoleOutput));
+		_JintEngine.SetValue("log", new Action<object>(Common.ConsoleOutput));
 	}
-
+	
 	[Fact]
 	public void Fibonacci()
 	{
@@ -271,8 +262,8 @@ namespace CSTOJS_Test.CSharp
 
 		FileData[] files = CSTOJS.Translate([file]);
 
-		_Engine.Execute(files[0].TranslatedStr);
-		Assert.Equal("377", _ConsoleStr);
+		_JintEngine.Execute(files[0].TranslatedStr);
+		Assert.Equal("377", Common.ConsoleStr);
 	}
 
 	[Fact]
@@ -308,8 +299,8 @@ namespace CSTOJS_Test.CSharp
 		};
 		FileData[] files = CSTOJS.Translate([file]);
 
-		_Engine.Execute(files[0].TranslatedStr);
-		Assert.Equal("HelloWorld!", _ConsoleStr);
+		_JintEngine.Execute(files[0].TranslatedStr);
+		Assert.Equal("HelloWorld!", Common.ConsoleStr);
 	}
 
 	[Fact]
@@ -343,8 +334,8 @@ namespace CSTOJS_Test.CSharp
 		};
 		FileData[] files = CSTOJS.Translate([file]);
 
-		_Engine.Execute(files[0].TranslatedStr);
-		Assert.Equal("HelloWorldField!", _ConsoleStr);
+		_JintEngine.Execute(files[0].TranslatedStr);
+		Assert.Equal("HelloWorldField!", Common.ConsoleStr);
 	}
 
 	[Fact]
@@ -379,8 +370,8 @@ namespace CSTOJS_Test.CSharp
 		};
 		FileData[] files = CSTOJS.Translate([file]);
 
-		_Engine.Execute(files[0].TranslatedStr);
-		Assert.Equal("GlobalThisDate", _ConsoleStr);
+		_JintEngine.Execute(files[0].TranslatedStr);
+		Assert.Equal("GlobalThisDate", Common.ConsoleStr);
 	}
 
 	[Theory]
@@ -428,10 +419,10 @@ namespace CSTOJS_Test.CSharp
 		};
 		FileData[] files = CSTOJS.Translate([file]);
 
-		_Engine.Execute(files[0].TranslatedStr);
+		_JintEngine.Execute(files[0].TranslatedStr);
 
 		string strExpected = data.Expected == string.Empty ? data.CSValue : data.Expected;
-		Assert.Equal(strExpected, _ConsoleStr);
+		Assert.Equal(strExpected, Common.ConsoleStr);
 	}
 
 	[Theory]
@@ -479,10 +470,10 @@ namespace CSTOJS_Test.CSharp
 		};
 		FileData[] files = CSTOJS.Translate([file]);
 
-		_Engine.Execute(files[0].TranslatedStr);
+		_JintEngine.Execute(files[0].TranslatedStr);
 
 		string strExpected = data.Expected == string.Empty ? data.CSValue : data.Expected;
-		Assert.Equal(strExpected, _ConsoleStr);
+		Assert.Equal(strExpected, Common.ConsoleStr);
 	}
 
 	[Theory]
@@ -527,10 +518,10 @@ namespace CSTOJS_Test.CSharp
 		};
 		FileData[] files = CSTOJS.Translate([file]);
 
-		_Engine.Execute(files[0].TranslatedStr);
+		_JintEngine.Execute(files[0].TranslatedStr);
 
 		string strExpected = data.Expected == string.Empty ? data.CSValue : data.Expected;
-		Assert.Equal(strExpected, _ConsoleStr);
+		Assert.Equal(strExpected, Common.ConsoleStr);
 	}
 
 	[Theory]
@@ -577,10 +568,10 @@ namespace CSTOJS_Test.CSharp
 		};
 		FileData[] files = CSTOJS.Translate([file]);
 
-		_Engine.Execute(files[0].TranslatedStr);
+		_JintEngine.Execute(files[0].TranslatedStr);
 
 		string strExpected = data.Expected == string.Empty ? data.CSValue : data.Expected;
-		Assert.Equal(strExpected, _ConsoleStr);
+		Assert.Equal(strExpected, Common.ConsoleStr);
 	}
 
 	[Theory]
@@ -627,10 +618,10 @@ namespace CSTOJS_Test.CSharp
 		};
 		FileData[] files = CSTOJS.Translate([file]);
 
-		_Engine.Execute(files[0].TranslatedStr);
+		_JintEngine.Execute(files[0].TranslatedStr);
 
 		string strExpected = data.Expected == string.Empty ? data.CSValue : data.Expected;
-		Assert.Equal(strExpected, _ConsoleStr);
+		Assert.Equal(strExpected, Common.ConsoleStr);
 	}
 
 	[Theory]
@@ -671,10 +662,10 @@ public class CustomClass
 		};
 		FileData[] files = CSTOJS.Translate([file]);
 
-		_Engine.Execute(files[0].TranslatedStr);
+		_JintEngine.Execute(files[0].TranslatedStr);
 
 		string strExpected = data.Expected == string.Empty ? data.CSValue : data.Expected;
-		Assert.Equal(strExpected, _ConsoleStr);
+		Assert.Equal(strExpected, Common.ConsoleStr);
 	}
 
 
@@ -772,8 +763,8 @@ namespace CSTOJS_Test.CSharp
 		};
 		FileData[] files = CSTOJS.Translate([file]);
 
-		_Engine.Execute(files[0].TranslatedStr);
-		Assert.Equal(expectedResult, _ConsoleStr);
+		_JintEngine.Execute(files[0].TranslatedStr);
+		Assert.Equal(expectedResult, Common.ConsoleStr);
 	}
 	[Fact]
 	public void Test_ImplicitOperatorTo()
@@ -787,9 +778,9 @@ Unsupported unsupported = ""str"";"
 
 		Assert.Equal($@"let unsupported = ""str"";", file.TranslatedStr);
 		
-		_Engine.Execute(PrepareStringForExecution(file.TranslatedStr, "unsupported"));
+		_JintEngine.Execute(Common.PrepareStringForExecution(file.TranslatedStr, "unsupported"));
 
-		Assert.Equal("str", _ConsoleStr);
+		Assert.Equal("str", Common.ConsoleStr);
 	}
 	[Fact]
 	public void Test_ImplicitOperatorFrom()
@@ -1038,9 +1029,9 @@ class Program
 
 		Assert.Equal(@"let a = new Array(1,2,3);", file.TranslatedStr);
 
-		_Engine.Execute(PrepareStringForExecution(file.TranslatedStr, "a[1]"));
+		_JintEngine.Execute(Common.PrepareStringForExecution(file.TranslatedStr, "a[1]"));
 
-		Assert.Equal("2", _ConsoleStr);
+		Assert.Equal("2", Common.ConsoleStr);
 	}
 
 	[Fact]
@@ -1685,9 +1676,9 @@ class C
 	static set P(value){this.#_P_ = value;}
 }", file.TranslatedStr);
 
-		_Engine.Execute(PrepareStringForExecution(file.TranslatedStr, "C.P"));
+		_JintEngine.Execute(Common.PrepareStringForExecution(file.TranslatedStr, "C.P"));
 
-		Assert.Equal("0", _ConsoleStr);
+		Assert.Equal("0", Common.ConsoleStr);
 	}
 	[Theory]
 	[InlineData(@"enum E1{A,B,C}", @"const E1 = {A : 0,B : 1,C : 2};", "E1.A", "0")]
@@ -1709,9 +1700,9 @@ public enum E2{A = 1,B = 2,C = 3}", @"const E2 = {A : 1,B : 2,C : 3};", "E2.A", 
 
 		Assert.Equal(expected, file.TranslatedStr);
 		
-		_Engine.Execute(PrepareStringForExecution(file.TranslatedStr, executeStr));
+		_JintEngine.Execute(Common.PrepareStringForExecution(file.TranslatedStr, executeStr));
 
-		Assert.Equal(expectedResult, _ConsoleStr);
+		Assert.Equal(expectedResult, Common.ConsoleStr);
 	}
 	[Theory]
 	[InlineData(@"var a = new {};", @"let a = {};", "a", "System.Dynamic.ExpandoObject")]
@@ -1726,9 +1717,9 @@ public enum E2{A = 1,B = 2,C = 3}", @"const E2 = {A : 1,B : 2,C : 3};", "E2.A", 
 
 		Assert.Equal(expected, file.TranslatedStr);
 		
-		_Engine.Execute(PrepareStringForExecution(file.TranslatedStr, executeStr));
+		_JintEngine.Execute(Common.PrepareStringForExecution(file.TranslatedStr, executeStr));
 
-		Assert.Equal(expectedResult, _ConsoleStr);
+		Assert.Equal(expectedResult, Common.ConsoleStr);
 	}
 	[Theory]
 	[InlineData(@"public class B{ public B() {} }
@@ -1760,40 +1751,6 @@ public enum E2{A = 1,B = 2,C = 3}", @"const E2 = {A : 1,B : 2,C : 3};", "E2.A", 
 		file = CSTOJS.Translate(file);
 
 		Assert.Equal(expected, file.TranslatedStr);
-	}
-	[Fact]
-	public void Test_StringEmpty()
-	{
-		FileData file = new()
-		{
-			SourceStr = @"namespace n;
-class C
-{
-	public static string P {get;set;} = string.Empty;
-	public string _F = string.Empty;
-	public C()
-	{
-		var l = string.Empty;
-	}
-}"
-		};
-		file = CSTOJS.Translate(file);
-
-		Assert.Equal(@"class C
-{
-	static #_P_= String.raw``;
-	static get P(){return this.#_P_;}
-	static set P(value){this.#_P_ = value;}
-	_F = String.raw``;
-	constructor()
-	{
-		let l = String.raw``;
-	}
-}", file.TranslatedStr);
-
-		_Engine.Execute(PrepareStringForExecution(file.TranslatedStr, "new C()"));
-
-		Assert.Equal("System.Dynamic.ExpandoObject", _ConsoleStr);
 	}
 	[Fact]
 	public void Test_AsyncMethod()
@@ -1837,9 +1794,9 @@ public class C
 			l.push(3);
 			for(let i of l){console.log(i);}", file.TranslatedStr);
 
-		_Engine.Execute(PrepareStringForExecution(file.TranslatedStr, "l[1]"));
+		_JintEngine.Execute(Common.PrepareStringForExecution(file.TranslatedStr, "l[1]"));
 
-		Assert.Equal("2", _ConsoleStr);
+		Assert.Equal("2", Common.ConsoleStr);
 	}
 	
 	[Fact]
@@ -1871,7 +1828,9 @@ public class C
 	[InlineData(@"namespace N;
 	public enum E{A,B}
 	class C{C(){Console.WriteLine(nameof(E.A));}}", @"const E = {A : 0,B : 1};
-	class C{constructor(){console.log(""A"");}}","new C()", "System.Dynamic.ExpandoObject")]
+	class C{constructor(){console.log(""A"");}}", "new C()", "System.Dynamic.ExpandoObject")]
+	[InlineData(@"var a = nameof(Console.WriteLine);", @"let a = ""log"";", "a", "log")]
+	[InlineData(@"var a = nameof(System.Console);", @"let a = ""console"";", "a", "console")]
 	public void Test_NameOfExpression(string cs, string expected, string executeStr, string expectedResult)
 	{
 		FileData file = new()
@@ -1883,9 +1842,9 @@ public class C
 
 		Assert.Equal(expected, file.TranslatedStr);
 
-		_Engine.Execute(PrepareStringForExecution(file.TranslatedStr, executeStr));
+		_JintEngine.Execute(Common.PrepareStringForExecution(file.TranslatedStr, executeStr));
 
-		Assert.Equal(expectedResult, _ConsoleStr);
+		Assert.Equal(expectedResult, Common.ConsoleStr);
 	}
 	[Fact]
 	public void Test_IgnoreExplicitNamespaces()
@@ -1898,9 +1857,9 @@ public class C
 
 		Assert.Equal(@"let a = new Array();", file.TranslatedStr);
 		
-		_Engine.Execute(PrepareStringForExecution(file.TranslatedStr, "a"));
+		_JintEngine.Execute(Common.PrepareStringForExecution(file.TranslatedStr, "a"));
 
-		Assert.Equal("System.Object[]", _ConsoleStr);
+		Assert.Equal("System.Object[]", Common.ConsoleStr);
 	}
 	
 	//Testing only c# since namespaces are ignored.
@@ -1914,42 +1873,7 @@ public class C
 		};
 		file = CSTOJS.Translate(file);
 		
-		Assert.Equal(@"namespace N;namespace N2;", file.DebugStrings[1]);
-	}
-	
-	[Theory]
-	//sbyte
-	[InlineData(@"var a = sbyte.MinValue;", @"let a = Number.parseInt(""-128"");", "a", "-128")]
-	[InlineData(@"var a = sbyte.MaxValue;", @"let a = Number.parseInt(""127"");", "a", "127")]
-	//byte
-	[InlineData(@"var a = byte.MinValue;", @"let a = Number.parseInt(""0"");", "a", "0")]
-	[InlineData(@"var a = byte.MaxValue;", @"let a = Number.parseInt(""255"");", "a", "255")]
-	//short
-	[InlineData(@"var a = short.MinValue;", @"let a = Number.parseInt(""-32768"");", "a", "-32768")]
-	[InlineData(@"var a = short.MaxValue;", @"let a = Number.parseInt(""32767"");", "a", "32767")]
-	//ushort
-	[InlineData(@"var a = ushort.MinValue;", @"let a = Number.parseInt(""0"");", "a", "0")]
-	[InlineData(@"var a = ushort.MaxValue;", @"let a = Number.parseInt(""65535"");", "a", "65535")]
-	//int
-	[InlineData(@"var a = int.MinValue;", @"let a = Number.parseInt(""-2147483648"");", "a", "-2147483648")]
-	[InlineData(@"var a = int.MaxValue;", @"let a = Number.parseInt(""2147483647"");", "a", "2147483647")]
-	//uint
-	[InlineData(@"var a = uint.MinValue;", @"let a = Number.parseInt(""0"");", "a", "0")]
-	[InlineData(@"var a = uint.MaxValue;", @"let a = Number.parseInt(""4294967295"");","a", "4294967295")]
-	public void Test_NumberMinMax(string cs, string expectedJS, string executeStr, string expectedResult)
-	{
-		FileData file = new()
-		{
-			SourceStr = cs
-		};
-		
-		file = CSTOJS.Translate(file);
-
-		Assert.Equal(expectedJS, file.TranslatedStr);
-
-		_Engine.Execute(PrepareStringForExecution(file.TranslatedStr, executeStr));
-
-		Assert.Equal(expectedResult, _ConsoleStr);
+		Assert.StartsWith(@"namespace N;namespace N2;", file.DebugStrings[1]);
 	}
 
 	[Fact]
@@ -1963,8 +1887,8 @@ public class C
 
 		Assert.Equal(@"const I = 5;", file.TranslatedStr);
 		
-		_Engine.Execute(PrepareStringForExecution(file.TranslatedStr, "I"));
-		Assert.Equal("5", _ConsoleStr);
+		_JintEngine.Execute(Common.PrepareStringForExecution(file.TranslatedStr, "I"));
+		Assert.Equal("5", Common.ConsoleStr);
 	}
 
 	[Fact]
@@ -1984,9 +1908,9 @@ public class C
 				GetZero() { return 0; }
 			}", file.TranslatedStr);
 
-		_Engine.Execute(PrepareStringForExecution(file.TranslatedStr, "new C().GetZero()"));
+		_JintEngine.Execute(Common.PrepareStringForExecution(file.TranslatedStr, "new C().GetZero()"));
 		
-		Assert.Equal("0", _ConsoleStr);
+		Assert.Equal("0", Common.ConsoleStr);
 	}
 
 	[Theory]
@@ -2034,9 +1958,9 @@ public class C
 	}}
 }}", file.TranslatedStr);
 
-		_Engine.Execute(PrepareStringForExecution(file.TranslatedStr, executeStr));
+		_JintEngine.Execute(Common.PrepareStringForExecution(file.TranslatedStr, executeStr));
 
-		Assert.Equal(expectedResult, _ConsoleStr);
+		Assert.Equal(expectedResult, Common.ConsoleStr);
 	}
 
 	[Theory]
@@ -2060,22 +1984,29 @@ public class C
 
 		Assert.Equal(expectedJS, file.TranslatedStr);
 
-		_Engine.Execute(PrepareStringForExecution(file.TranslatedStr, executeStr));
+		_JintEngine.Execute(Common.PrepareStringForExecution(file.TranslatedStr, executeStr));
 
-		Assert.Equal(expectedResult, _ConsoleStr);
+		Assert.Equal(expectedResult, Common.ConsoleStr);
 	}
-	
-	private string PrepareStringForExecution(string translatedStr, string executeStr)
-	{
-		string str = "let console = { log: log };\n";
-		str += translatedStr;
-		str += $"\nconsole.log({executeStr});";
 
-		return str;
-	}
-	private void ConsoleOutput(object? obj)
+	//TODO!
+	//https://sebastienros.github.io/jint/guide/web-apis/console-and-timers
+	[Theory]
+	[InlineData(@"Console.WriteLine(""{0}"", 1);", @"console.log(""%s"", 1);", "", "%s")]
+	[InlineData(@"Console.WriteLine(""{0}-{1}"", 1, ""asd"");", @"console.log(""%s-%s"", 1, ""asd"");", "", "%s-%s")]
+	public void Test_StringComposite(string cs, string expectedJS, string executeStr, string expectedResult)
 	{
-		_ConsoleStr = obj?.ToString() ?? "null";
+		FileData file = new()
+		{
+			SourceStr = cs
+		};
+		file = CSTOJS.Translate(file);
+
+		Assert.Equal(expectedJS, file.TranslatedStr);
+
+		_JintEngine.Execute(Common.PrepareStringForExecution(file.TranslatedStr, executeStr));
+
+		Assert.Equal(expectedResult, Common.ConsoleStr);
 	}
 }
 

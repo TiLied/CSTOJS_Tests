@@ -1,33 +1,9 @@
 using CSharpToJavaScript;
-using System.Globalization;
-using System.Threading;
 
 namespace CSTOJS_Tests;
 
 public class UnitTest_ThisExpression
 {
-	/*
-	private readonly Engine _Engine = new(cfg => cfg.Culture(CultureInfo.InvariantCulture));
-	private string _ConsoleStr = string.Empty;
-	public UnitTest_ThisExpression()
-	{
-		//https://stackoverflow.com/a/45117890
-		CultureInfo info = CultureInfo.InvariantCulture;
-		Thread.CurrentThread.CurrentCulture = info;
-		Thread.CurrentThread.CurrentUICulture = Thread.CurrentThread.CurrentCulture;
-
-		_Engine.SetValue("log", new Action<object>(ConsoleOutPut));
-	}
-	private void ConsoleOutPut(object? obj)
-	{
-		_ConsoleStr = obj?.ToString() ?? "null";
-	}
-	*/
-	public UnitTest_ThisExpression()
-	{
-		Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
-		Thread.CurrentThread.CurrentUICulture = Thread.CurrentThread.CurrentCulture;
-	}
 	[Fact]
 	public void Test_CastThis()
 	{

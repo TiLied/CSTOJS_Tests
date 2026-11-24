@@ -1,28 +1,22 @@
-﻿using CSharpToJavaScript;
-using Jint;
-using System;
+﻿using System;
 using System.Globalization;
-using System.Threading;
+using CSharpToJavaScript;
+using Jint;
 
 namespace CSTOJS_Tests;
 
 public class UnitTestCSTutorial
 {
-	private readonly Engine _Engine = new();
-	private string _ConsoleStr = string.Empty;
+	private readonly Engine _JintEngine = new(cfg => cfg.Culture(CultureInfo.InvariantCulture));
+	
 	private readonly CSTOJSOptions _DefaultUnitOpt = new()
 	{
 		AddSBAtTheTop = new("let console = { log: log };")
 	};
-
 	public UnitTestCSTutorial()
 	{
-		Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
-		Thread.CurrentThread.CurrentUICulture = Thread.CurrentThread.CurrentCulture;
-
-		_Engine.SetValue("log", new Action<object>(ConsoleOutPut));
+		_JintEngine.SetValue("log", new Action<object>(Common.ConsoleOutput));
 	}
-
 	[Fact]
 	public void FirstProgram()
 	{
@@ -33,8 +27,8 @@ public class UnitTestCSTutorial
 		};
 		FileData[] files = CSTOJS.Translate([file]);
 
-		_Engine.Execute(files[0].TranslatedStr);
-		Assert.Equal("Hello, World!", _ConsoleStr);
+		_JintEngine.Execute(files[0].TranslatedStr);
+		Assert.Equal("Hello, World!", Common.ConsoleStr);
 	}
 	[Fact]
 	public void DeclareAndUseVariables()
@@ -47,8 +41,8 @@ Console.WriteLine(aFriend);"
 		};
 		FileData[] files = CSTOJS.Translate([file]);
 
-		_Engine.Execute(files[0].TranslatedStr);
-		Assert.Equal("Bill", _ConsoleStr);
+		_JintEngine.Execute(files[0].TranslatedStr);
+		Assert.Equal("Bill", Common.ConsoleStr);
 	}
 	[Fact]
 	public void DeclareAndUseVariables2()
@@ -62,8 +56,8 @@ Console.WriteLine(aFriend);"
 		};
 		FileData[] files = CSTOJS.Translate([file]);
 
-		_Engine.Execute(files[0].TranslatedStr);
-		Assert.Equal("Maira", _ConsoleStr);
+		_JintEngine.Execute(files[0].TranslatedStr);
+		Assert.Equal("Maira", Common.ConsoleStr);
 	}
 	[Fact]
 	public void DeclareAndUseVariables3()
@@ -77,8 +71,8 @@ Console.WriteLine(""Hello "" + aFriend);"
 		};
 		FileData[] files = CSTOJS.Translate([file]);
 
-		_Engine.Execute(files[0].TranslatedStr);
-		Assert.Equal("Hello Maira", _ConsoleStr);
+		_JintEngine.Execute(files[0].TranslatedStr);
+		Assert.Equal("Hello Maira", Common.ConsoleStr);
 	}
 	[Fact]
 	public void DeclareAndUseVariables4()
@@ -92,8 +86,8 @@ Console.WriteLine($""Hello {aFriend}"");"
 		};
 		FileData[] files = CSTOJS.Translate([file]);
 
-		_Engine.Execute(files[0].TranslatedStr);
-		Assert.Equal("Hello Maira", _ConsoleStr);
+		_JintEngine.Execute(files[0].TranslatedStr);
+		Assert.Equal("Hello Maira", Common.ConsoleStr);
 	}
 	[Fact]
 	public void WorkWithStrings()
@@ -107,8 +101,8 @@ Console.WriteLine($""My friends are {firstFriend} and {secondFriend}"");"
 		};
 		FileData[] files = CSTOJS.Translate([file]);
 
-		_Engine.Execute(files[0].TranslatedStr);
-		Assert.Equal("My friends are Maria and Sage", _ConsoleStr);
+		_JintEngine.Execute(files[0].TranslatedStr);
+		Assert.Equal("My friends are Maria and Sage", Common.ConsoleStr);
 	}
 	[Fact]
 	public void WorkWithStrings2()
@@ -122,8 +116,8 @@ Console.WriteLine($""The name {firstFriend} has {firstFriend.Length} letters."")
 		};
 		FileData[] files = CSTOJS.Translate([file]);
 
-		_Engine.Execute(files[0].TranslatedStr);
-		Assert.Equal("The name Maria has 5 letters.", _ConsoleStr);
+		_JintEngine.Execute(files[0].TranslatedStr);
+		Assert.Equal("The name Maria has 5 letters.", Common.ConsoleStr);
 	}
 	[Fact]
 	public void WorkWithStrings3()
@@ -137,8 +131,8 @@ Console.WriteLine($""The name {secondFriend} has {secondFriend.Length} letters."
 		};
 		FileData[] files = CSTOJS.Translate([file]);
 
-		_Engine.Execute(files[0].TranslatedStr);
-		Assert.Equal("The name Sage has 4 letters.", _ConsoleStr);
+		_JintEngine.Execute(files[0].TranslatedStr);
+		Assert.Equal("The name Sage has 4 letters.", Common.ConsoleStr);
 	}
 	[Fact]
 	public void Trim()
@@ -151,8 +145,8 @@ Console.WriteLine($""[{greeting}]"");"
 		};
 		FileData[] files = CSTOJS.Translate([file]);
 
-		_Engine.Execute(files[0].TranslatedStr);
-		Assert.Equal("[      Hello World!       ]", _ConsoleStr);
+		_JintEngine.Execute(files[0].TranslatedStr);
+		Assert.Equal("[      Hello World!       ]", Common.ConsoleStr);
 	}
 	[Fact]
 	public void Trim2()
@@ -166,8 +160,8 @@ Console.WriteLine($""[{trimmedGreeting}]"");"
 		};
 		FileData[] files = CSTOJS.Translate([file]);
 
-		_Engine.Execute(files[0].TranslatedStr);
-		Assert.Equal("[Hello World!       ]", _ConsoleStr);
+		_JintEngine.Execute(files[0].TranslatedStr);
+		Assert.Equal("[Hello World!       ]", Common.ConsoleStr);
 	}
 	[Fact]
 	public void Trim3()
@@ -181,8 +175,8 @@ Console.WriteLine($""[{trimmedGreeting}]"");"
 		};
 		FileData[] files = CSTOJS.Translate([file]);
 
-		_Engine.Execute(files[0].TranslatedStr);
-		Assert.Equal("[      Hello World!]", _ConsoleStr);
+		_JintEngine.Execute(files[0].TranslatedStr);
+		Assert.Equal("[      Hello World!]", Common.ConsoleStr);
 	}
 	[Fact]
 	public void Trim4()
@@ -196,8 +190,8 @@ Console.WriteLine($""[{trimmedGreeting}]"");"
 		};
 		FileData[] files = CSTOJS.Translate([file]);
 
-		_Engine.Execute(files[0].TranslatedStr);
-		Assert.Equal("[Hello World!]", _ConsoleStr);
+		_JintEngine.Execute(files[0].TranslatedStr);
+		Assert.Equal("[Hello World!]", Common.ConsoleStr);
 	}
 	[Fact]
 	public void Replace()
@@ -212,8 +206,8 @@ Console.WriteLine(sayHello);"
 		};
 		FileData[] files = CSTOJS.Translate([file]);
 
-		_Engine.Execute(files[0].TranslatedStr);
-		Assert.Equal("Greetings World!", _ConsoleStr);
+		_JintEngine.Execute(files[0].TranslatedStr);
+		Assert.Equal("Greetings World!", Common.ConsoleStr);
 	}
 	[Fact]
 	public void Replace2ToUpper()
@@ -229,8 +223,8 @@ Console.WriteLine(sayHello.ToUpper());"
 		};
 		FileData[] files = CSTOJS.Translate([file]);
 
-		_Engine.Execute(files[0].TranslatedStr);
-		Assert.Equal("GREETINGS WORLD!", _ConsoleStr);
+		_JintEngine.Execute(files[0].TranslatedStr);
+		Assert.Equal("GREETINGS WORLD!", Common.ConsoleStr);
 	}
 	[Fact]
 	public void Replace3ToLower()
@@ -246,8 +240,8 @@ Console.WriteLine(sayHello.ToLower());"
 		};
 		FileData[] files = CSTOJS.Translate([file]);
 
-		_Engine.Execute(files[0].TranslatedStr);
-		Assert.Equal("greetings world!", _ConsoleStr);
+		_JintEngine.Execute(files[0].TranslatedStr);
+		Assert.Equal("greetings world!", Common.ConsoleStr);
 	}
 	[Fact]
 	public void SearchStrings()
@@ -261,13 +255,8 @@ Console.WriteLine(songLyrics.Contains(""greetings""));"
 		};
 		FileData[] files = CSTOJS.Translate([file]);
 
-		_Engine.Execute(files[0].TranslatedStr);
-		Assert.Equal("False", _ConsoleStr);
+		_JintEngine.Execute(files[0].TranslatedStr);
+		Assert.Equal("False", Common.ConsoleStr);
 	}
-	private void ConsoleOutPut(object obj)
-	{
-		_ConsoleStr = obj.ToString() ?? "null";
-	}
-
 }
 
