@@ -128,17 +128,16 @@ public class UnitTest
 			new (new("float", "-3.4028235E+38f", Number.MIN_SAFE_INTEGER.ToString())),
 			new (new("int", int.MinValue.ToString(), string.Empty)),
 			new (new("uint", uint.MinValue.ToString(), string.Empty)),
-			new (new("nint", nint.MinValue.ToString(), Number.MIN_SAFE_INTEGER.ToString() )
+			new (new("nint", $"(nint){nint.MinValue}", Number.MIN_SAFE_INTEGER.ToString() )
 			{
 				SkipMethods = new()
 				{ 
-					//Todo?
-					[ nameof(TestFieldsDefaultValue) ] = "error CS0266: Cannot implicitly convert type 'long' to 'nint'. An explicit conversion exists (are you missing a cast?)",
-					[ nameof(TestDefaultParameterInMethod)] = "error CS1750: A value of type 'long' cannot be used as a default parameter because there are no standard conversions to type 'nint'",
-					[ nameof(TestLocalValue) ] = "error CS0266: Cannot implicitly convert type 'long' to 'nint'. An explicit conversion exists (are you missing a cast?)",
-					[ nameof(TestPassValueToMethod) ] = "error CS1503: Argument 1: cannot convert from 'long' to 'nint'",
-					[ nameof(TestPropertiesDefaultValue) ] = "error CS0266: Cannot implicitly convert type 'long' to 'nint'. An explicit conversion exists (are you missing a cast?)",
-					[ nameof(Test_ReturnValue)] = "error CS0266: Cannot implicitly convert type 'long' to 'nint'. An explicit conversion exists(are you missing a cast?)",
+					[ nameof(TestFieldsDefaultValue) ] = "error CS0119: 'nint' is a type, which is not valid in the given context",
+					[ nameof(TestDefaultParameterInMethod)] = "error CS0119: 'nint' is a type, which is not valid in the given context",
+					[ nameof(TestLocalValue) ] = "error CS0119: 'nint' is a type, which is not valid in the given context",
+					[ nameof(TestPassValueToMethod) ] = "error CS0119: 'nint' is a type, which is not valid in the given context",
+					[ nameof(TestPropertiesDefaultValue) ] = "error CS0119: 'nint' is a type, which is not valid in the given context",
+					[ nameof(Test_ReturnValue)] = "error CS0119: 'nint' is a type, which is not valid in the given context",
 				}
 			}),
 			new (new("nuint", nuint.MinValue.ToString(), string.Empty)),
@@ -166,30 +165,18 @@ public class UnitTest
 			new (new("float", "3.4028235E+38f", Number.MAX_SAFE_INTEGER.ToString() )),
 			new (new("int", int.MaxValue.ToString(), string.Empty)),
 			new (new("uint", uint.MaxValue.ToString() , string.Empty)),
-			new (new("nint", nint.MaxValue.ToString() , Number.MAX_SAFE_INTEGER.ToString())
+			new (new("nint", $"(nint){nint.MaxValue}", Number.MAX_SAFE_INTEGER.ToString())
 			{
 				SkipMethods = new()
 				{
-					//Todo?
-					[ nameof(TestFieldsDefaultValue)] = "error CS0266: Cannot implicitly convert type 'long' to 'nint'. An explicit conversion exists (are you missing a cast?)",
-					[ nameof(TestDefaultParameterInMethod)] = "error CS1750: A value of type 'long' cannot be used as a default parameter because there are no standard conversions to type 'nint'",
-					[ nameof(TestLocalValue) ] = "error CS0266: Cannot implicitly convert type 'long' to 'nint'. An explicit conversion exists (are you missing a cast?)",
-					[ nameof(TestPassValueToMethod) ] = "error CS1503: Argument 1: cannot convert from 'long' to 'nint'",
-					[ nameof(TestPropertiesDefaultValue) ] = "error CS0266: Cannot implicitly convert type 'long' to 'nint'. An explicit conversion exists (are you missing a cast?)",
-					[ nameof(Test_ReturnValue)] = "error CS0266: Cannot implicitly convert type 'long' to 'nint'. An explicit conversion exists(are you missing a cast?)",
+					[ nameof(TestDefaultParameterInMethod)] = "error CS1736: Default parameter value for 'value' must be a compile-time constant",
 				}
 			}),
-			new (new("nuint", nuint.MaxValue.ToString() , Number.MAX_SAFE_INTEGER.ToString())
+			new (new("nuint", $"(nuint){nuint.MaxValue}", Number.MAX_SAFE_INTEGER.ToString())
 			{
 				SkipMethods = new()
 				{
-					//Todo? Expected fail? see TestDefaultParameterInMethod
-					[ nameof(TestFieldsDefaultValue)] = "error CS0266: Cannot implicitly convert type 'ulong' to 'nuint'. An explicit conversion exists (are you missing a cast?)",
-					[ nameof(TestDefaultParameterInMethod)] = "error CS1750: A value of type 'ulong' cannot be used as a default parameter because there are no standard conversions to type 'nuint'",
-					[ nameof(TestLocalValue)] = "error CS0266: Cannot implicitly convert type 'ulong' to 'nuint'. An explicit conversion exists (are you missing a cast?)",
-					[ nameof(TestPassValueToMethod) ] = "error CS1503: Argument 1: cannot convert from 'ulong' to 'nuint'",
-					[ nameof(TestPropertiesDefaultValue)] = "error CS0266: Cannot implicitly convert type 'ulong' to 'nuint'. An explicit conversion exists (are you missing a cast?)",
-					[ nameof(Test_ReturnValue)] = "error CS0266: Cannot implicitly convert type 'ulong' to 'nuint'. An explicit conversion exists(are you missing a cast?)",
+					[ nameof(TestDefaultParameterInMethod)] = "error CS1736: Default parameter value for 'value' must be a compile-time constant",
 				}
 			}),
 			new (new("long", long.MaxValue.ToString(), Number.MAX_SAFE_INTEGER.ToString())),
@@ -1056,6 +1043,11 @@ using CSharpToJavaScript.APIs.JS;
 	[InlineData("int a = 1; var b = (dynamic)a;", "let a = 1; let b = a;")]
 	[InlineData("dynamic a = 1 as dynamic;", "let a = 1;")]
 	[InlineData("int a = 1; var b = a as dynamic;", "let a = 1; let b = a;")]
+	[InlineData(@"using CSharpToJavaScript.APIs.JS;
+using CSharpToJavaScript.APIs.JS.Ecma;
+using static CSharpToJavaScript.APIs.JS.Ecma.GlobalObject;
+var a = (dynamic)JSON.Stringify(new { text = ((ParentNode)GlobalThis.Window.Document).QuerySelector<HTMLInputElement>(""#text"").Value });",
+@"let a = JSON.stringify({ text : globalThis.window.document.querySelector(""#text"").value });")]
 	public void Test_Casting(string cs, string expected)
 	{
 		FileData file = new()
